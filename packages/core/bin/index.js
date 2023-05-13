@@ -1,3 +1,5 @@
 #!/usr/bin/env node
 
-console.log('strive cli!')
+const utils = require('@strive-cli/utils')
+utils()
+console.log('strive cli!2')

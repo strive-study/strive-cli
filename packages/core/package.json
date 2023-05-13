@@ -5,6 +5,9 @@
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "",
   "license": "ISC",
+  "bin": {
+    "strive": "bin/index.js"
+  },
   "main": "bin/index.js",
   "directories": {
     "lib": "lib",
@@ -20,6 +23,6 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@strive-cli/utils": "^1.0.3"
+    "@strive-cli/utils": "file:../utils"
   }
 }
