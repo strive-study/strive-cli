@@ -1,6 +1,6 @@
 {
   "name": "@strive-cli/core",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "",
@@ -20,6 +20,6 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@strive-cli/utils": "^1.0.1"
+    "@strive-cli/utils": "^1.0.3"
   }
 }
