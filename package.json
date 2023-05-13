@@ -1,0 +1,25 @@
+{
+  "name": "strive-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier": "prettier --write .",
+    "prepare": "husky install"
+  },
+  "bin": {
+    "strive": "./bin/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "husky": "^8.0.3",
+    "lerna": "^6.6.2",
+    "prettier": "^2.8.8"
+  },
+  "workspaces": [
+    "packages/*"
+  ]
+}

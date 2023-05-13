@@ -1,0 +1,25 @@
+{
+  "name": "@strive-cli/core",
+  "version": "1.0.0",
+  "description": "> TODO: description",
+  "author": "xiaoli <2585960098@qq.com>",
+  "homepage": "",
+  "license": "ISC",
+  "main": "lib/core.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "registry": "https://registry.npmmirror.com/"
+  },
+  "scripts": {
+    "test": "node ./__tests__/core.test.js"
+  },
+  "dependencies": {
+    "@strive-cli/utils": "^1.0.0"
+  }
+}
