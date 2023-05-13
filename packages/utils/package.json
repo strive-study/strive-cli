@@ -1,6 +1,6 @@
 {
   "name": "@strive-cli/utils",
-  "version": "1.0.3",
+  "version": "1.0.0",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "",
@@ -10,9 +10,6 @@
     "lib": "lib",
     "test": "__tests__"
   },
-  "files": [
-    "lib"
-  ],
   "publishConfig": {
     "registry": "https://registry.npmmirror.com/"
   },
