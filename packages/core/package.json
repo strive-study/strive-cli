@@ -1,6 +1,6 @@
 {
   "name": "@strive-cli/core",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "",
@@ -17,14 +17,14 @@
     "bin"
   ],
   "publishConfig": {
-    "registry": "https://registry.npmmirror.com/",
+    "registry": "https://registry.npmjs.org/",
     "access": "public"
   },
   "scripts": {
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@strive-cli/utils": "file:../utils"
+    "@strive-cli/utils": "^1.0.1"
   },
-  "gitHead": "07f3f5cf642b137705488e2f09aa03e65779fa68"
+  "gitHead": "d9d4b54ed666bef7a329439c1ac851c99ebb0525"
 }
