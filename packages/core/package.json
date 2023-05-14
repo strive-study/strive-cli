@@ -1,6 +1,6 @@
 {
   "name": "@strive-cli/core",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "",
@@ -25,5 +25,6 @@
   },
   "dependencies": {
     "@strive-cli/utils": "file:../utils"
-  }
+  },
+  "gitHead": "07f3f5cf642b137705488e2f09aa03e65779fa68"
 }
