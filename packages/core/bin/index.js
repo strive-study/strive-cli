@@ -2,4 +2,4 @@
 
 const utils = require('@strive-cli/utils')
 utils()
-console.log('strive cli!2')
+console.log('strive cli!')
