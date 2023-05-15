@@ -1,0 +1,34 @@
+{
+  "name": "@strive-cli/package",
+  "version": "1.0.1",
+  "description": "> TODO: description",
+  "author": "xiaoli <2585960098@qq.com>",
+  "homepage": "https://github.com/18845778092/strive-cli#readme",
+  "license": "ISC",
+  "main": "lib/index.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "dependencies": {
+    "@strive-cli/utils": "file:../utils/utils",
+    "@strive-cli/format-path": "file:../utils/format-path",
+    "pkg-dir": "^5.0.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/18845778092/strive-cli.git"
+  },
+  "scripts": {
+    "test": "node ./__tests__/@strive-cli/package.test.js"
+  },
+  "bugs": {
+    "url": "https://github.com/18845778092/strive-cli/issues"
+  }
+}
