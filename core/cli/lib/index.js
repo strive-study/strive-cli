@@ -37,6 +37,9 @@ const core = async () => {
     log.verbose('debug', 'debug开启')
   } catch (e) {
     log.error(e.message)
+    if (program.opts().debug) {
+      log.error(e)
+    }
   }
 }
 const prepare = async () => {
