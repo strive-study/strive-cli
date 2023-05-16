@@ -46,4 +46,4 @@ const getDefaultRegistry = (isOriginal = false) => {
 //   const latestVersion = getNpmSemverVersions(baseV, versions)
 //   console.log('latestVersion', latestVersion)
 // }
-module.exports = { getNpmInfo }
+module.exports = { getNpmInfo, getDefaultRegistry }
