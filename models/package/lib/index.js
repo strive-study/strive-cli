@@ -1,7 +1,11 @@
 const path = require('path')
+const pathExists = require('path-exists').sync
+const fse = require('fs-extra')
+const npminstall = require('npminstall')
 const pkgDir = require('pkg-dir').sync
 const log = require('@strive-cli/log')
 const { isObject } = require('@strive-cli/utils')
+const { getDefaultRegistry, getNpmInfo } = require('@strive-cli/get-npm-info')
 const formatPath = require('@strive-cli/format-path')
 
 class Package {
@@ -13,26 +17,97 @@ class Package {
       throw new Error('Package类的options必须为对象!')
     }
     this.targetPath = options.targetPath
+    // 最终package路径 node_modules
+    this.storeDir = options.storeDir
     this.packageName = options.packageName
     this.packageVersion = options.packageVersion
+    this.cacheFilePathPrefix = this.packageName.replace('/', '_')
     console.log('package... 实例化')
   }
 
-  exists() {}
+  async exists() {
+    if (this.storeDir) {
+      // 缓存模式 未指定targetPath
+      await this.prepare()
+      return pathExists(this.cacheFilePath)
+    } else {
+      return pathExists(this.targetPath)
+    }
+  }
 
-  install() {}
+  async prepare() {
+    // if (this.storeDir && !pathExists(this.storeDir)) {
+    //   fse.mkdirpSync(this.storeDir)
+    // }
 
-  update() {}
+    if (this.packageVersion === 'latest') {
+      const res = await getNpmInfo(this.packageName)
+      this.packageVersion = res['dist-tags'].latest
+    }
+  }
+
+  async install() {
+    await this.prepare()
+    return npminstall({
+      root: this.targetPath,
+      storeDir: this.storeDir,
+      registry: getDefaultRegistry(),
+      pkgs: [{ name: this.packageName, version: this.packageVersion }]
+    })
+  }
+  get cacheFilePath() {
+    // npminstall 旧版本
+    // @strive-cli/init -->  _@strive-cli_init@1.1.2@@strive-cli
+    // return path.resolve(
+    //   this.storeDir,
+    //   `_${this.cacheFilePathPrefix}@${this.packageVersion}@${this.packageName}`
+    // )
+
+    // 新版本 参考pnpm修改
+    return path.resolve(this.storeDir, this.packageName)
+  }
+  // async update() {
+  //   await this.prepare()
+  //   //  下面代码在新版本中基本可以删除了
+  //   const res = await getNpmInfo(this.packageName)
+  //   const latest = res['dist-tags'].latest
+  //   const latestFilePath = this.getSpecificCacheFilePath(latest)
+  //   if (!pathExists(latestFilePath)) {
+  //     await npminstall({
+  //       root: this.targetPath,
+  //       storeDir: this.storeDir,
+  //       registry: getDefaultRegistry(),
+  //       pkgs: [{ name: this.packageName, version: latest }]
+  //     })
+  //     this.packageVersion = latest
+  //   }
+  // }
+
+  // getSpecificCacheFilePath(version) {
+  //   return path.resolve(
+  //     this.storeDir,
+  //     `_${this.cacheFilePathPrefix}@${version}@${this.packageName}`
+  //   )
+  // }
 
   getRootFilePath() {
-    const dir = pkgDir(this.targetPath)
-    if (dir) {
-      const pkg = require(path.join(dir, 'package.json'))
-      if (pkg && pkg.main) {
-        return formatPath(path.resolve(dir, pkg.main))
+    function _getRootFile(targetPath) {
+      const dir = pkgDir(targetPath)
+      if (dir) {
+        const pkg = require(path.join(dir, 'package.json'))
+        if (pkg && pkg.main) {
+          return formatPath(path.resolve(dir, pkg.main))
+        }
       }
+      return null
     }
-    return null
+    if (this.storeDir) {
+      // 使用缓存
+      return _getRootFile(this.cacheFilePath)
+    } else {
+      // 输入 targetPath
+      return _getRootFile(this.targetPath)
+    }
   }
 }
 
