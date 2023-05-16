@@ -17,5 +17,5 @@
   "scripts": {
     "test": "node ./__tests__/@strive/utils.test.js"
   },
-  "gitHead": "d5f9811e33f03b0304526b3aea62883a2987f417"
+  "gitHead": "dc6b49b109c1a82e91d038246e93d7f1d3d4cdc4"
 }
