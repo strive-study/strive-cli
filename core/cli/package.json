@@ -1,6 +1,6 @@
 {
   "name": "@strive-cli/cli",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "",
@@ -24,10 +24,10 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@strive-cli/exec": "^1.0.2",
-    "@strive-cli/get-npm-info": "^1.0.2",
-    "@strive-cli/init": "^1.0.2",
-    "@strive-cli/log": "^1.0.2",
+    "@strive-cli/exec": "^1.0.3",
+    "@strive-cli/get-npm-info": "^1.0.3",
+    "@strive-cli/init": "^1.0.3",
+    "@strive-cli/log": "^1.0.3",
     "colors": "^1.4.0",
     "commander": "^10.0.1",
     "dotenv": "^16.0.3",
