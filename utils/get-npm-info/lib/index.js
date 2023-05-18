@@ -22,7 +22,7 @@ function getNpmInfo(npmName, registry) {
     })
 }
 
-const getDefaultRegistry = (isOriginal = false) => {
+const getDefaultRegistry = (isOriginal = true) => {
   return isOriginal
     ? 'https://registry.npmjs.org'
     : 'https://registry.npm.taobao.org'

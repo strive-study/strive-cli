@@ -5,14 +5,13 @@ const colors = require('colors')
 const rootCheck = require('root-check')
 const pathExists = require('path-exists').sync
 const dotenv = require('dotenv')
-const minimist = require('minimist')
 const commander = require('commander')
 let log = require('@strive-cli/log')
 const init = require('@strive-cli/init')
 const exec = require('@strive-cli/exec')
 const pkg = require('../package.json')
 const { getNpmInfo } = require('@strive-cli/get-npm-info')
-const { LOWEST_NODE_VERSION, DEFAULT_CLI_HOME } = require('./const')
+const { DEFAULT_CLI_HOME } = require('./const')
 
 let args
 // let log
@@ -22,15 +21,6 @@ const userHome = homedir()
 const core = async () => {
   try {
     console.log('core~!~')
-    // log 放最前
-    // checkInputArgs()
-
-    // checkPkgVersion()
-    // checkNodeVersion()
-    // rootCheck()
-    // checkUserHome()
-    // checkEnv()
-    // await checkGlobalUpdate()
     prepare()
     // 注册命令
     registerCommand()
@@ -44,7 +34,7 @@ const core = async () => {
 }
 const prepare = async () => {
   checkPkgVersion()
-  checkNodeVersion()
+  // checkNodeVersion()
   rootCheck()
   checkUserHome()
   checkEnv()
@@ -56,14 +46,14 @@ const checkPkgVersion = () => {
   log.success('test', 'success')
 }
 
-const checkNodeVersion = () => {
-  const nodeVersion = process.version
-  if (!semver.gte(nodeVersion, LOWEST_NODE_VERSION)) {
-    throw new Error(
-      colors.red(`strive-cli 需要使用 v${LOWEST_NODE_VERSION} 以上的版本`)
-    )
-  }
-}
+// const checkNodeVersion = () => {
+//   const nodeVersion = process.version
+//   if (!semver.gte(nodeVersion, LOWEST_NODE_VERSION)) {
+//     throw new Error(
+//       colors.red(`strive-cli 需要使用 v${LOWEST_NODE_VERSION} 以上的版本`)
+//     )
+//   }
+// }
 
 const checkUserHome = () => {
   if (!userHome || !pathExists(userHome))

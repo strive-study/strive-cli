@@ -26,6 +26,7 @@ class Package {
   }
 
   async exists() {
+    console.log('this', this)
     if (this.storeDir) {
       // 缓存模式 未指定targetPath
       await this.prepare()

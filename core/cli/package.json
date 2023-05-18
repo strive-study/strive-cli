@@ -24,10 +24,10 @@
     "test": "node ./__tests__/core.test.js"
   },
   "dependencies": {
-    "@strive-cli/exec": "^1.0.3",
-    "@strive-cli/get-npm-info": "^1.0.3",
-    "@strive-cli/init": "^1.0.3",
-    "@strive-cli/log": "^1.0.3",
+    "@strive-cli/exec": "file:../exec",
+    "@strive-cli/get-npm-info": "file:../../utils/get-npm-info",
+    "@strive-cli/init": "file:../../commands/init",
+    "@strive-cli/log": "file:../../utils/log",
     "colors": "^1.4.0",
     "commander": "^10.0.1",
     "dotenv": "^16.0.3",
