@@ -67,7 +67,6 @@ const checkEnv = () => {
     dotenv.config({ path: envPath })
   }
   createDefault()
-  log.verbose('环境变量', config, process.env.CLI_HOME_PATH)
 }
 
 const createDefault = () => {
