@@ -1,7 +1,7 @@
 const path = require('path')
-const cp = require('child_process')
 const log = require('@strive-cli/log')
 const Package = require('@strive-cli/package')
+const { spawn } = require('@strive-cli/utils')
 
 const settings = {
   init: '@strive-cli/init' //多init包
@@ -97,13 +97,6 @@ async function exec(projectName, options, cwdObj) {
       log.error(e.message)
     }
   }
-}
-
-function spawn(command, args, options) {
-  const win32 = process.platform === 'win32'
-  const cmd = win32 ? 'cmd' : command
-  const cmdArgs = win32 ? ['/c'].concat(command, args) : args
-  return cp.spawn(cmd, cmdArgs, options || {})
 }
 
 module.exports = exec

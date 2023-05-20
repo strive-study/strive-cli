@@ -21,12 +21,10 @@ class Package {
     this.storeDir = options.storeDir
     this.packageName = options.packageName
     this.packageVersion = options.packageVersion
-    this.cacheFilePathPrefix = this.packageName.replace('/', '_')
-    console.log('package... 实例化')
+    // this.cacheFilePathPrefix = this.packageName.replace('/', '_')
   }
 
   async exists() {
-    console.log('this', this)
     if (this.storeDir) {
       // 缓存模式 未指定targetPath
       await this.prepare()

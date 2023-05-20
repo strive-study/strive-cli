@@ -17,5 +17,8 @@
   "scripts": {
     "test": "node ./__tests__/@strive/utils.test.js"
   },
-  "gitHead": "f214da5775a03502ae4fdba1b308a1a071d60221"
+  "gitHead": "f214da5775a03502ae4fdba1b308a1a071d60221",
+  "dependencies": {
+    "cli-spinner": "^0.2.10"
+  }
 }

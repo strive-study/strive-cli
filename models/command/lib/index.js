@@ -25,7 +25,7 @@ class Command {
         // 用户自定义的init exec 方法
         .then(() => this.init())
         .then(() => this.exec())
-      // .catch(e => log.error(e.message))
+        .catch(e => log.error(e.message))
       // chain = chain.then(() => this.checkNodeVersion())
       // chain = chain.then(() => this.initArgs())
       // chain = chain.then(() => this.init())
