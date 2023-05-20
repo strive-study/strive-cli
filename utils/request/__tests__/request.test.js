@@ -1,7 +1,7 @@
-'use strict';
+'use strict'
 
-const request = require('..');
-const assert = require('assert').strict;
+const request = require('..')
+const assert = require('assert').strict
 
-assert.strictEqual(request(), 'Hello from request');
-console.info('request tests passed');
+assert.strictEqual(request(), 'Hello from request')
+console.info('request tests passed')
