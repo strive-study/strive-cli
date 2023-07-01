@@ -1,5 +1,5 @@
 {
-  "name": "@strive-cli/publish",
+  "name": "@strive-cli/git",
   "version": "1.0.0",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
@@ -9,12 +9,6 @@
   "directories": {
     "lib": "lib",
     "test": "__tests__"
-  },
-  "dependencies": {
-    "@strive-cli/command": "file:../../models/command",
-    "@strive-cli/log": "file:../../utils/log",
-    "@strive-cli/git": "file:../../models/git",
-    "fs-extra": "^7.0.1"
   },
   "files": [
     "lib"
@@ -27,9 +21,12 @@
     "url": "git+https://github.com/strive-study/strive-cli.git"
   },
   "scripts": {
-    "test": "node ./__tests__/@strive-cli/publish.test.js"
+    "test": "node ./__tests__/@strive-cli/git.test.js"
   },
   "bugs": {
     "url": "https://github.com/strive-study/strive-cli/issues"
+  },
+  "dependencies": {
+    "simple-git": "^3.19.1"
   }
 }
