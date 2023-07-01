@@ -4,22 +4,24 @@ const Package = require('@strive-cli/package')
 const { spawn } = require('@strive-cli/utils')
 
 const settings = {
-  init: '@strive-cli/init' //多init包
+  init: '@strive-cli/init', //多init包
+  publish: '@strive-cli/publish'
 }
 
 const CACHE_DIR = 'dependencies'
 
-async function exec(projectName, options, cwdObj) {
+async function exec() {
   let targetPath = process.env.CLI_TARGET_PATH
   const homePath = process.env.CLI_HOME_PATH
   let storeDir = ''
   let pkg
-  const command = cwdObj.name()
+  const args = Array.from(arguments)
+  const cmd = args[args.length - 1]
+
+  const command = cmd.name()
   const packageName = settings[command]
   const packageVersion = 'latest'
-  // const packageVersion = '1.0.1' //test
 
-  log.verbose('exec', projectName, options, command)
   log.verbose('exec', `targetPath==>${targetPath}`)
   log.verbose('exec', `homePath==>${homePath}`)
 
@@ -27,7 +29,6 @@ async function exec(projectName, options, cwdObj) {
     // 生成缓存路径
     targetPath = path.resolve(homePath, CACHE_DIR)
     storeDir = path.resolve(targetPath, 'node_modules')
-    log.verbose('没有targetPath', targetPath, storeDir)
 
     pkg = new Package({
       targetPath,
@@ -59,9 +60,6 @@ async function exec(projectName, options, cwdObj) {
   const rootFile = pkg.getRootFilePath()
   if (rootFile) {
     try {
-      // require(rootFile).call(null, Array.from(arguments))
-      const args = Array.from(arguments)
-      const cmd = args[args.length - 1]
       const o = Object.create(null)
       Object.keys(cmd).forEach(key => {
         if (

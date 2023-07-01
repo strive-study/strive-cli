@@ -9,7 +9,7 @@
     "prepare": "husky install"
   },
   "bin": {
-    "strive": "./packages/core/bin/index.js"
+    "strive": "./core/bin/index.js"
   },
   "keywords": [],
   "author": "",

@@ -26,11 +26,6 @@ class Command {
         .then(() => this.init())
         .then(() => this.exec())
         .catch(e => log.error(e.message))
-      // chain = chain.then(() => this.checkNodeVersion())
-      // chain = chain.then(() => this.initArgs())
-      // chain = chain.then(() => this.init())
-      // chain = chain.then(() => this.exec())
-      // chain.catch(e => log.error(e.message))
     })
   }
   checkNodeVersion = () => {
@@ -44,7 +39,6 @@ class Command {
   }
 
   initArgs() {
-    console.log('initArgs')
     this.cmd = this._argv[this._argv.length - 1]
     this._argv = this._argv.slice(0, this._argv.length - 1)
   }

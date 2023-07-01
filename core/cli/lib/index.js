@@ -111,6 +111,8 @@ const registerCommand = () => {
     // .action(init)
     .action(exec)
 
+  program.command('publish').action(exec)
+
   program.on('option:debug', () => {
     if (program.opts().debug) {
       process.env.LOG_LEVEL = 'verbose'
