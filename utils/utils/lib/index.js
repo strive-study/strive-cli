@@ -1,4 +1,5 @@
 const cp = require('child_process')
+const fs = require('fs')
 
 const Spinner = require('cli-spinner').Spinner
 
@@ -37,4 +38,38 @@ function spawnAsync(command, args, options) {
   })
 }
 
-module.exports = { isObject, spinnerStart, sleep, spawn, spawnAsync }
+function readFile(path, options = {}) {
+  if (fs.existsSync(path)) {
+    const buffer = fs.readFileSync(path)
+    if (buffer) {
+      if (options.toJson) {
+        return buffer.toJSON()
+      }
+      return buffer.toString()
+    }
+  }
+  return null
+}
+
+function writeFile(path, data, { rewrite = true } = {}) {
+  if (fs.existsSync(path)) {
+    if (rewrite) {
+      fs.writeFileSync(path, data)
+      return true
+    }
+    return false
+  } else {
+    fs.writeFileSync(path, data)
+    return true
+  }
+}
+
+module.exports = {
+  isObject,
+  spinnerStart,
+  sleep,
+  spawn,
+  spawnAsync,
+  readFile,
+  writeFile
+}

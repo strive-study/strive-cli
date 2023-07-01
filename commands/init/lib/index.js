@@ -26,7 +26,6 @@ class InitCommand extends Command {
   init() {
     this.projectName = this._argv[0] || ''
     this.force = !!this._argv[1].force
-    log.verbose('init', this.projectName, this.force)
   }
 
   async exec() {

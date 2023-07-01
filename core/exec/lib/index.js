@@ -22,9 +22,6 @@ async function exec() {
   const packageName = settings[command]
   const packageVersion = 'latest'
 
-  log.verbose('exec', `targetPath==>${targetPath}`)
-  log.verbose('exec', `homePath==>${homePath}`)
-
   if (!targetPath) {
     // 生成缓存路径
     targetPath = path.resolve(homePath, CACHE_DIR)
@@ -46,7 +43,6 @@ async function exec() {
     // }
     // new
     if (!(await pkg.exists())) {
-      log.verbose('包不存在执行安装')
       await pkg.install()
     }
   } else {
@@ -56,7 +52,6 @@ async function exec() {
       packageVersion
     })
   }
-  console.log('rootFilePath==>', pkg.getRootFilePath())
   const rootFile = pkg.getRootFilePath()
   if (rootFile) {
     try {

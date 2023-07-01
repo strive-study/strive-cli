@@ -24,7 +24,6 @@ const core = async () => {
     prepare()
     // 注册命令
     registerCommand()
-    log.verbose('debug', 'debug开启')
   } catch (e) {
     log.error(e.message)
     if (program.opts().debug) {
@@ -111,7 +110,11 @@ const registerCommand = () => {
     // .action(init)
     .action(exec)
 
-  program.command('publish').action(exec)
+  program
+    .command('publish')
+    .option('--refreshServer', '强制更新远程Git仓库')
+    .option('--refreshToken', '强制更新远程仓库Token')
+    .action(exec)
 
   program.on('option:debug', () => {
     if (program.opts().debug) {

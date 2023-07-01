@@ -27,6 +27,12 @@
     "url": "https://github.com/strive-study/strive-cli/issues"
   },
   "dependencies": {
-    "simple-git": "^3.19.1"
+    "@strive-cli/log": "file:../../utils/log",
+    "@strive-cli/utils": "file:../../utils/utils",
+    "axios": "^1.4.0",
+    "fs-extra": "^11.1.1",
+    "inquirer": "^7.3.3",
+    "simple-git": "^3.19.1",
+    "terminal-link": "^2.1.1"
   }
 }

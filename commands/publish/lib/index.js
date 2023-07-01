@@ -8,18 +8,18 @@ const fse = require('fs-extra')
 class PublishCommand extends Command {
   init() {
     // 参数处理
-    log.verbose('init', this._argv)
-    log.verbose('init', this.cmd)
+    this.options = this.cmd.opts
   }
 
-  exec() {
+  async exec() {
     try {
       const startTime = new Date().getTime()
       // 初始化检查
       this.prepare()
       // gitflow自动化
-      const git = new Git(this.projectInfo)
-      git.init()
+      const git = new Git(this.projectInfo, this.options)
+      // git.init()
+      await git.prepare()
       // 云构建云发布
       const endTime = new Date().getTime()
       log.info(`本次发布耗时：${Math.floor(endTime - startTime) / 1000}秒`)
@@ -34,13 +34,11 @@ class PublishCommand extends Command {
     // 1.是否为npm项目
     const projectPath = process.cwd()
     const pkgPath = path.resolve(projectPath, 'package.json')
-    log.verbose('package.json', pkgPath)
     if (!fs.existsSync(pkgPath)) {
       throw new Error('package.json不存在！')
     }
     // 2.是否包含name、version、以及build命令
     const { name, version, scripts } = fse.readJSONSync(pkgPath)
-    log.verbose('package.json', name, version, scripts)
     if (!name) {
       throw new Error('package.json中缺少name字段！')
     }
