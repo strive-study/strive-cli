@@ -8,6 +8,7 @@ const terminalLink = require('terminal-link')
 const inquirer = require('inquirer')
 const GitHub = require('./github')
 const Gitee = require('./gitee')
+const template = require('./gitignore')
 
 const DEFAULT_CLI_HOME = '.strive-cli'
 const GIT_ROOT_DIR = '.git'
@@ -15,6 +16,7 @@ const GIT_SERVER_FILE = '.git_server' // 存储使用的git平台
 const GIT_TOKEN_FILE = '.git_token' //存储git token
 const GIT_OWNER_FILE = '.git_owner' //个人or组织
 const GIT_LOGIN_FILE = '.git_login' //登录用户名 个人 or 组织名
+const GIT_IGNORE_FILE = '.gitignore' //gitignore
 const GITHUB = 'github'
 const GITEE = 'gitee'
 const REPO_OWNER_USER = 'user'
@@ -53,7 +55,7 @@ class Git {
   ) {
     this.name = name // 项目名称
     this.version = version
-    this.dir = dir // 源码目录
+    this.dir = dir // 项目源码目录
     this.git = SimpleGit(dir)
     this.gitServer = null
     this.homePath = null // 本地缓存目录
@@ -74,10 +76,19 @@ class Git {
     await this.getUserAndOrg() // 获取远程仓库用户和组织信息
     await this.checkGitOwner() // 确认远程仓库类型
     await this.checkRepo() // 检查并创建远程仓库
+    this.checkGitignore() // 检查并创建 .gitignore
   }
 
   init() {
     console.log('git init')
+  }
+  checkGitignore() {
+    console.log(this.dir)
+    const gitignore = path.resolve(this.dir, GIT_IGNORE_FILE)
+    if (!fs.existsSync(gitignore)) {
+      writeFile(gitignore, template)
+      log.success(`自动写入${GIT_IGNORE_FILE}文件成功`)
+    }
   }
 
   checkHomePath() {
