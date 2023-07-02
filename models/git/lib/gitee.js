@@ -8,13 +8,16 @@ class Gitee extends GitServer {
 
   setToken(token) {
     super.setToken(token)
-    console.log('---------', token)
     this.request = new GiteeRequest(token)
   }
 
-  createRepo() {}
+  createRepo(name) {
+    return this.request.post('/user/repos', {
+      name
+    })
+  }
 
-  createOrgRepo() {}
+  createOrgRepo(name, org) {}
 
   getRemote() {}
 
@@ -29,12 +32,26 @@ class Gitee extends GitServer {
     })
   }
 
+  getRepo(login, name) {
+    return this.request.get(`/repos/${login}/${name}`).then(res => {
+      return this.handleRes(res)
+    })
+  }
+
   getTokenUrl() {
     return 'https://gitee.com/profile/personal_access_tokens'
   }
 
   getSSHKeyUrl() {
     return 'https://help.gitee.com/base/account/SSH%E5%85%AC%E9%92%A5%E8%AE%BE%E7%BD%AE'
+  }
+
+  handleRes = res => {
+    // 404
+    if ('message' in res) {
+      return null
+    }
+    return res
   }
 }
 

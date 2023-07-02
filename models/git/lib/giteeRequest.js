@@ -13,7 +13,7 @@ class GiteeRequest {
       },
       error => {
         if (error.response && error.response.data) {
-          return error.response
+          return error.response.data
         } else {
           return Promise.reject(error)
         }
@@ -29,6 +29,18 @@ class GiteeRequest {
         access_token: this.token
       },
       method: 'get',
+      headers
+    })
+  }
+
+  post(url, data, headers) {
+    return this.service({
+      url,
+      params: {
+        access_token: this.token
+      },
+      data,
+      method: 'post',
       headers
     })
   }

@@ -11,8 +11,21 @@ class GitHub extends GitServer {
     super.setToken(token)
     this.request = new GithubRequest(token)
   }
-
-  createRepo() {}
+  getRepo(login, name) {
+    return this.request.get(`/repos/${login}/${name}`).then(res => {
+      console.log('res', res)
+      return this.handleRes(res)
+    })
+  }
+  createRepo(name) {
+    return this.request.post(
+      '/user/repos',
+      {
+        name
+      },
+      { 'X-GitHub-Api-Version': '2022-11-28' }
+    )
+  }
 
   createOrgRepo() {}
 
@@ -45,6 +58,13 @@ class GitHub extends GitServer {
 
   getSSHKeyUrl() {
     return 'https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent'
+  }
+
+  handleRes = res => {
+    if (res.status && res.status === 404) {
+      return null
+    }
+    return res
   }
 }
 

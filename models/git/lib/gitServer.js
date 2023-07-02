@@ -1,6 +1,9 @@
 function error(methodName) {
   throw new Error(`${methodName} must be implemented`)
 }
+/**
+ * git仓库实例基类
+ */
 class GitServer {
   constructor(type, token) {
     this.type = type
@@ -15,7 +18,7 @@ class GitServer {
     error('createRepo')
   }
 
-  createOrgRepo() {
+  createOrgRepo(name, org) {
     error('createOrgRepo')
   }
 
@@ -29,6 +32,10 @@ class GitServer {
 
   getOrg() {
     error('getOrg')
+  }
+
+  getRepo(login, name) {
+    error('getRepo')
   }
 
   getTokenUrl() {

@@ -20,7 +20,6 @@ let program = new commander.Command()
 const userHome = homedir()
 const core = async () => {
   try {
-    console.log('core~!~')
     prepare()
     // 注册命令
     registerCommand()
@@ -114,6 +113,7 @@ const registerCommand = () => {
     .command('publish')
     .option('--refreshServer', '强制更新远程Git仓库')
     .option('--refreshToken', '强制更新远程仓库Token')
+    .option('--refreshOwner', '强制更新远程仓库所属类型')
     .action(exec)
 
   program.on('option:debug', () => {

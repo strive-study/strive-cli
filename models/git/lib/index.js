@@ -3,7 +3,7 @@ const { homedir } = require('os')
 const fse = require('fs-extra')
 const SimpleGit = require('simple-git')
 const log = require('@strive-cli/log')
-const { readFile, writeFile } = require('@strive-cli/utils')
+const { readFile, writeFile, spinnerStart } = require('@strive-cli/utils')
 const terminalLink = require('terminal-link')
 const inquirer = require('inquirer')
 const GitHub = require('./github')
@@ -11,10 +11,14 @@ const Gitee = require('./gitee')
 
 const DEFAULT_CLI_HOME = '.strive-cli'
 const GIT_ROOT_DIR = '.git'
-const GIT_SERVER_FILE = '.git_server'
-const GIT_TOKEN_FILE = '.git_token'
+const GIT_SERVER_FILE = '.git_server' // 存储使用的git平台
+const GIT_TOKEN_FILE = '.git_token' //存储git token
+const GIT_OWNER_FILE = '.git_owner' //个人or组织
+const GIT_LOGIN_FILE = '.git_login' //登录用户名 个人 or 组织名
 const GITHUB = 'github'
 const GITEE = 'gitee'
+const REPO_OWNER_USER = 'user'
+const REPO_OWNER_ORG = 'org'
 const GIT_SERVER_TYPE = [
   {
     name: 'Github',
@@ -25,22 +29,42 @@ const GIT_SERVER_TYPE = [
     value: GITEE
   }
 ]
+const GIT_OWNER_TYPE = [
+  {
+    name: '个人',
+    value: REPO_OWNER_USER
+  },
+  {
+    name: '组织',
+    value: REPO_OWNER_ORG
+  }
+]
+const GIT_OWNER_TYPE_ONLY = [
+  {
+    name: '个人',
+    value: REPO_OWNER_USER
+  }
+]
 
 class Git {
   constructor(
     { name, version, dir },
-    { refreshServer = false, refreshToken = false }
+    { refreshServer = false, refreshToken = false, refreshOwner = false }
   ) {
-    this.name = name
+    this.name = name // 项目名称
     this.version = version
-    this.dir = dir
+    this.dir = dir // 源码目录
     this.git = SimpleGit(dir)
     this.gitServer = null
-    this.homePath = null
-    this.user = null
-    this.orgs = null
-    this.refreshServer = refreshServer
-    this.refreshToken = refreshToken
+    this.homePath = null // 本地缓存目录
+    this.user = null // 用户信息
+    this.orgs = null // 用户所属组织列表
+    this.owner = null // 远程仓库所属类型
+    this.login = null // 远程仓库登录名
+    this.repo = null // 远程仓库信息
+    this.refreshServer = refreshServer // 是否强制刷新远程仓库
+    this.refreshToken = refreshToken // 是否强制刷新远程仓库token
+    this.refreshOwner = refreshOwner // 是否强制刷新远程仓库所属类型
   }
 
   async prepare() {
@@ -48,6 +72,8 @@ class Git {
     await this.checkGitServer() // 检查用户远程仓库类型
     await this.checkGitToken() // 获取远程仓库token
     await this.getUserAndOrg() // 获取远程仓库用户和组织信息
+    await this.checkGitOwner() // 确认远程仓库类型
+    await this.checkRepo() // 检查并创建远程仓库
   }
 
   init() {
@@ -64,6 +90,27 @@ class Git {
     }
     log.verbose('home', this.homePath)
     fse.ensureDirSync(this.homePath)
+  }
+
+  createPath(file) {
+    const rootDir = path.resolve(this.homePath, GIT_ROOT_DIR)
+    const filePath = path.resolve(rootDir, file)
+    fse.ensureDirSync(rootDir)
+    return filePath
+  }
+
+  /**
+   * 创建对应git类型
+   * @param {*} gitServer
+   */
+  createGitServer(gitServer) {
+    gitServer = gitServer.trim()
+    if (gitServer === GITHUB) {
+      return new GitHub()
+    } else if (gitServer === GITEE) {
+      return new Gitee()
+    }
+    return null
   }
 
   async checkGitServer() {
@@ -86,27 +133,6 @@ class Git {
     }
     this.gitServer = this.createGitServer(gitServer)
     if (!this.gitServer) throw new Error('GitServer初始化失败！')
-  }
-
-  createPath(file) {
-    const rootDir = path.resolve(this.homePath, GIT_ROOT_DIR)
-    const filePath = path.resolve(rootDir, file)
-    fse.ensureDirSync(rootDir)
-    return filePath
-  }
-
-  /**
-   * 创建对应git类型
-   * @param {*} gitServer
-   */
-  createGitServer(gitServer) {
-    gitServer = gitServer.trim()
-    if (gitServer === GITHUB) {
-      return new GitHub()
-    } else if (gitServer === GITEE) {
-      return new Gitee()
-    }
-    return null
   }
 
   async checkGitToken() {
@@ -138,12 +164,79 @@ class Git {
 
   async getUserAndOrg() {
     this.user = await this.gitServer.getUser()
-    console.log('用户信息', this.user)
     if (!this.user) throw new Error('用户信息获取失败')
     this.orgs = await this.gitServer.getOrg(this.user.login)
-    console.log('组织信息', this.orgs)
     if (!this.orgs) throw new Error('组织信息获取失败')
     log.success(this.gitServer.type + '用户和组织信息获取成功')
+  }
+
+  async checkGitOwner() {
+    const ownerPath = this.createPath(GIT_OWNER_FILE)
+    const loginPath = this.createPath(GIT_LOGIN_FILE)
+    let owner = readFile(ownerPath)
+    let login = readFile(loginPath)
+    if (!owner || !login || this.refreshOwner) {
+      owner = (
+        await inquirer.prompt({
+          type: 'list',
+          name: 'owner',
+          message: '请选择远程仓库类型',
+          default: REPO_OWNER_USER,
+          choices: this.orgs.length > 0 ? GIT_OWNER_TYPE : GIT_OWNER_TYPE_ONLY
+        })
+      ).owner
+      if (owner === REPO_OWNER_USER) {
+        login = this.user.login
+      } else {
+        login = (
+          await inquirer.prompt({
+            type: 'list',
+            name: 'login',
+            message: '请选择',
+            default: '',
+            choices: this.orgs.map(item => ({
+              name: item.login,
+              value: item.login
+            }))
+          })
+        ).login
+      }
+      writeFile(ownerPath, owner)
+      writeFile(loginPath, login)
+      log.success('owner写入成功', `${owner} -> ${ownerPath}`)
+      log.success('login写入成功', `${login} -> ${loginPath}`)
+    } else {
+      log.success('owner获取成功')
+      log.success('login获取成功')
+    }
+    this.owner = owner
+    this.login = login
+  }
+
+  async checkRepo() {
+    let repo = await this.gitServer.getRepo(this.login, this.name)
+    if (!repo) {
+      let spinner = spinnerStart('开始创建远程仓库...')
+      try {
+        if (this.owner === REPO_OWNER_USER) {
+          repo = await this.gitServer.createRepo(this.name)
+        } else {
+          this.gitServer.createOrgRepo(this.name, this.login)
+        }
+      } catch (error) {
+        console.log('创建失败', error)
+      } finally {
+        spinner.stop(true)
+      }
+      if (repo) {
+        log.success('远程仓库创建成功')
+      } else {
+        throw new Error('远程仓库创建失败')
+      }
+    } else {
+      log.success('远程仓库信息获取成功')
+    }
+    this.repo = repo
   }
 }
 module.exports = Git
