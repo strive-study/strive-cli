@@ -77,13 +77,36 @@ class Git {
     await this.checkGitOwner() // 确认远程仓库类型
     await this.checkRepo() // 检查并创建远程仓库
     this.checkGitignore() // 检查并创建 .gitignore
+    await this.init() // 初始化本地仓库 .git
   }
 
-  init() {
-    console.log('git init')
+  async init() {
+    if (await this.getRemote()) {
+      return
+    }
+    await this.initAndAddRemote()
   }
+  async getRemote() {
+    const gitPath = path.resolve(this.dir, GIT_ROOT_DIR)
+    this.remote = this.gitServer.getRemote(this.login, this.name)
+    if (fs.existsSync(gitPath)) {
+      log.success('git已完成初始化')
+      return true
+    }
+  }
+
+  async initAndAddRemote() {
+    log.info('执行 git 初始化')
+    await this.git.init(this.dir)
+    log.info('添加git remote')
+    const remotes = await this.git.getRemotes()
+    log.verbose('git remotes', remotes)
+    if (!remotes.find(remote => remote.name === 'origin')) {
+      await this.git.addRemote('origin', this.remote)
+    }
+  }
+
   checkGitignore() {
-    console.log(this.dir)
     const gitignore = path.resolve(this.dir, GIT_IGNORE_FILE)
     if (!fs.existsSync(gitignore)) {
       writeFile(gitignore, template)

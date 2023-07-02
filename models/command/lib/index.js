@@ -29,7 +29,6 @@ class Command {
     })
   }
   checkNodeVersion = () => {
-    console.log('check node')
     const nodeVersion = process.version
     if (!semver.gte(nodeVersion, LOWEST_NODE_VERSION)) {
       throw new Error(

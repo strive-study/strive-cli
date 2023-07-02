@@ -78,6 +78,10 @@ class GitHub extends GitServer {
     }
     return res
   }
+
+  getRemote(login, name) {
+    return `git@github.com:${login}/${name}.git`
+  }
 }
 
 module.exports = GitHub
