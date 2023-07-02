@@ -9,7 +9,7 @@ const inquirer = require('inquirer')
 const GitHub = require('./github')
 const Gitee = require('./gitee')
 
-const DEFAULT_CLI_HOME = '.imooc-cli-dev'
+const DEFAULT_CLI_HOME = '.strive-cli'
 const GIT_ROOT_DIR = '.git'
 const GIT_SERVER_FILE = '.git_server'
 const GIT_TOKEN_FILE = '.git_token'
@@ -114,11 +114,9 @@ class Git {
     let token = readFile(tokenPath)
     if (!token || this.refreshToken) {
       log.warn(
-        this.gitServer.type +
-          `token未生成,请先生成${this.gitServer.type} token, ${terminalLink(
-            '链接',
-            this.gitServer.getTokenHelpUrl()
-          )}
+        `${this.gitServer.type} token未生成,请先生成${
+          this.gitServer.type
+        } token, ${terminalLink('链接', this.gitServer.getTokenUrl())}
       `
       )
       token = (
@@ -140,8 +138,10 @@ class Git {
 
   async getUserAndOrg() {
     this.user = await this.gitServer.getUser()
+    console.log('用户信息', this.user)
     if (!this.user) throw new Error('用户信息获取失败')
     this.orgs = await this.gitServer.getOrg(this.user.login)
+    console.log('组织信息', this.orgs)
     if (!this.orgs) throw new Error('组织信息获取失败')
     log.success(this.gitServer.type + '用户和组织信息获取成功')
   }

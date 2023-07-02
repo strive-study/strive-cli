@@ -1,11 +1,16 @@
 const GitServer = require('./gitServer')
+const GithubRequest = require('./githubRequest')
 
 class GitHub extends GitServer {
   constructor() {
     super('github')
+    this.request = null
   }
 
-  setToken() {}
+  setToken(token) {
+    super.setToken(token)
+    this.request = new GithubRequest(token)
+  }
 
   createRepo() {}
 
@@ -13,12 +18,29 @@ class GitHub extends GitServer {
 
   getRemote() {}
 
-  getUser() {}
+  getUser() {
+    return this.request.get(
+      '/user',
+      {},
+      { 'X-GitHub-Api-Version': '2022-11-28' }
+    )
+  }
 
-  getOrg() {}
+  getOrg(username) {
+    return this.request.get(
+      `/users/${username}/orgs`,
+      {
+        page: 1,
+        per_page: 100
+      },
+      {
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
+    )
+  }
 
-  getTokenHelpUrl() {
-    return 'https://github.com/settings/keys'
+  getTokenUrl() {
+    return 'https://github.com/settings/tokens/new'
   }
 
   getSSHKeyUrl() {

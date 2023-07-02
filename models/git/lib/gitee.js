@@ -8,6 +8,7 @@ class Gitee extends GitServer {
 
   setToken(token) {
     super.setToken(token)
+    console.log('---------', token)
     this.request = new GiteeRequest(token)
   }
 
@@ -28,8 +29,8 @@ class Gitee extends GitServer {
     })
   }
 
-  getTokenHelpUrl() {
-    return 'https://gitee.com/profile/sshkeys'
+  getTokenUrl() {
+    return 'https://gitee.com/profile/personal_access_tokens'
   }
 
   getSSHKeyUrl() {
