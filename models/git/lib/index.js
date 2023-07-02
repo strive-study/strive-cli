@@ -85,7 +85,79 @@ class Git {
       return
     }
     await this.initAndAddRemote()
+    await this.initCommit()
   }
+
+  async initCommit() {
+    await this.checkConflicted()
+    await this.checkNotCommitted()
+    if (await this.checkRemoteMaster()) {
+      await this.pullRemoteRepo('master', {
+        '--allow-unrelated-histories': null
+      })
+    } else {
+      await this.pushRemoteRepo('master')
+    }
+  }
+
+  async pullRemoteRepo(branchName, options) {
+    log.info(`同步远程${branchName}分支代码`)
+    await this.git.pull('origin', branchName, options).catch(err => {
+      log.error(err.message)
+    })
+  }
+
+  async pushRemoteRepo(branchName) {
+    log.info(`推送代码至${branchName}分支`)
+    await this.git.push('origin', branchName)
+    log.success('推送代码成功')
+  }
+
+  async checkRemoteMaster() {
+    return (
+      (await this.git.listRemote(['--refs'])).indexOf('refs/heads/master') >= 0
+    )
+  }
+
+  async checkConflicted() {
+    log.info('代码冲突检查')
+    const status = await this.git.status()
+    console.log(status)
+    if (status.conflicted.length > 0) {
+      throw new Error('当前代码存在冲突, 请手动处理合并后再试！')
+    }
+    log.success('代码冲突检查通过')
+  }
+
+  async checkNotCommitted() {
+    const status = await this.git.status()
+    if (
+      status.not_added.length > 0 ||
+      status.created.length > 0 ||
+      status.deleted.length > 0 ||
+      status.modified.length > 0 ||
+      status.renamed.length > 0
+    ) {
+      await this.git.add(status.not_added)
+      await this.git.add(status.created)
+      await this.git.add(status.deleted)
+      await this.git.add(status.modified)
+      await this.git.add(status.renamed)
+      let message
+      while (!message) {
+        message = (
+          await inquirer.prompt({
+            type: 'text',
+            name: 'message',
+            message: '请输入commit信息'
+          })
+        ).message
+      }
+      await this.git.commit(message)
+      log.success('本地commit提交成功')
+    }
+  }
+
   async getRemote() {
     const gitPath = path.resolve(this.dir, GIT_ROOT_DIR)
     this.remote = this.gitServer.getRemote(this.login, this.name)

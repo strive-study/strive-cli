@@ -32,7 +32,7 @@
     "axios": "^1.4.0",
     "fs-extra": "^11.1.1",
     "inquirer": "^7.3.3",
-    "simple-git": "^3.19.1",
+    "simple-git": "^2.48.0",
     "terminal-link": "^2.1.1"
   }
 }
