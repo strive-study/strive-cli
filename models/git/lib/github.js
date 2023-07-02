@@ -11,12 +11,13 @@ class GitHub extends GitServer {
     super.setToken(token)
     this.request = new GithubRequest(token)
   }
+
   getRepo(login, name) {
     return this.request.get(`/repos/${login}/${name}`).then(res => {
-      console.log('res', res)
       return this.handleRes(res)
     })
   }
+
   createRepo(name) {
     return this.request.post(
       '/user/repos',
@@ -27,7 +28,18 @@ class GitHub extends GitServer {
     )
   }
 
-  createOrgRepo() {}
+  createOrgRepo(name, org) {
+    return this.request.post(
+      `/orgs/${org}/repos`,
+      {
+        name
+      },
+      {
+        'X-GitHub-Api-Version': '2022-11-28',
+        Accept: 'application/vnd.github.v3+json'
+      }
+    )
+  }
 
   getRemote() {}
 
@@ -39,9 +51,9 @@ class GitHub extends GitServer {
     )
   }
 
-  getOrg(username) {
+  getOrg() {
     return this.request.get(
-      `/users/${username}/orgs`,
+      `/user/orgs`,
       {
         page: 1,
         per_page: 100

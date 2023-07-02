@@ -17,7 +17,11 @@ class Gitee extends GitServer {
     })
   }
 
-  createOrgRepo(name, org) {}
+  createOrgRepo(name, org) {
+    return this.request.post(`/orgs/${org}/repos`, {
+      name
+    })
+  }
 
   getRemote() {}
 
