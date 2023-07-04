@@ -9,6 +9,7 @@ class PublishCommand extends Command {
   init() {
     // 参数处理
     this.options = this.cmd.opts
+    log.verbose('publish参数', this._argv)
   }
 
   async exec() {
@@ -23,6 +24,7 @@ class PublishCommand extends Command {
       // 代码自动化提交
       await git.commit()
       // 云构建云发布
+      await git.publish()
       const endTime = new Date().getTime()
       log.info(`本次发布耗时：${Math.floor(endTime - startTime) / 1000}秒`)
     } catch (e) {

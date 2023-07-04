@@ -1,6 +1,6 @@
 {
-  "name": "@strive-cli/git",
-  "version": "1.0.0",
+  "name": "@strive-cli/cloudbuild",
+  "version": "1.1.0",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "https://github.com/strive-study/strive-cli#readme",
@@ -21,20 +21,12 @@
     "url": "git+https://github.com/strive-study/strive-cli.git"
   },
   "scripts": {
-    "test": "node ./__tests__/@strive-cli/git.test.js"
+    "test": "node ./__tests__/@strive-cli/cloudbuild.test.js"
   },
   "bugs": {
     "url": "https://github.com/strive-study/strive-cli/issues"
   },
   "dependencies": {
-    "@strive-cli/log": "file:../../utils/log",
-    "@strive-cli/utils": "file:../../utils/utils",
-    "@strive-cli/cloudbuild": "file:../../models/cloudbuild",
-    "axios": "^1.4.0",
-    "fs-extra": "^11.1.1",
-    "inquirer": "^7.3.3",
-    "semver": "^7.5.3",
-    "simple-git": "^2.48.0",
-    "terminal-link": "^2.1.1"
+    "socket.io-client": "^2.5.0"
   }
 }

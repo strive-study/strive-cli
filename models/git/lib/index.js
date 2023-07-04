@@ -4,6 +4,7 @@ const fse = require('fs-extra')
 const SimpleGit = require('simple-git')
 const log = require('@strive-cli/log')
 const { readFile, writeFile, spinnerStart } = require('@strive-cli/utils')
+const CloudBuild = require('@strive-cli/cloudbuild')
 const terminalLink = require('terminal-link')
 const semver = require('semver')
 const inquirer = require('inquirer')
@@ -54,7 +55,12 @@ const GIT_OWNER_TYPE_ONLY = [
 class Git {
   constructor(
     { name, version, dir }, // projectInfo
-    { refreshServer = false, refreshToken = false, refreshOwner = false }
+    {
+      refreshServer = false,
+      refreshToken = false,
+      refreshOwner = false,
+      buildCmd = ''
+    }
   ) {
     this.name = name // 项目名称
     this.version = version
@@ -71,6 +77,7 @@ class Git {
     this.refreshServer = refreshServer // 是否强制刷新远程仓库
     this.refreshToken = refreshToken // 是否强制刷新远程仓库token
     this.refreshOwner = refreshOwner // 是否强制刷新远程仓库所属类型
+    this.buildCmd = buildCmd // 云构建命令
   }
 
   async prepare() {
@@ -90,6 +97,40 @@ class Git {
     }
     await this.initAndAddRemote()
     await this.initCommit()
+  }
+
+  async commit() {
+    // 生成开发分支
+    await this.getCorrectVersion()
+    // 检查stash区
+    await this.checkStash()
+    // 检查代码冲突
+    await this.checkConflicted()
+    // 切换开发分支
+    await this.checkoutBranch(this.branch)
+    // 合并远程master分支和开发分支代码到本地开发分支
+    await this.pullRemoteMasterAndBranch()
+    // 将开发分支推送到远程仓库
+    await this.pushRemoteRepo(this.branch)
+  }
+
+  async publish() {
+    await this.preparePublish()
+
+    const cloudBuild = new CloudBuild(this, {
+      buildCmd: this.buildCmd
+    })
+  }
+
+  async preparePublish() {
+    if (this.buildCmd) {
+      const cmdArr = this.buildCmd.split(' ')
+      if (cmdArr[0] !== 'npm' && cmdArr[0] !== 'cnpm') {
+        throw new Error('Build命令非法, 必须使用npm或cnpm')
+      }
+    } else {
+      this.buildCmd = 'npm run build'
+    }
   }
 
   async initCommit() {
@@ -346,21 +387,6 @@ class Git {
       log.success('远程仓库信息获取成功')
     }
     this.repo = repo
-  }
-
-  async commit() {
-    // 生成开发分支
-    await this.getCorrectVersion()
-    // 检查stash区
-    await this.checkStash()
-    // 检查代码冲突
-    await this.checkConflicted()
-    // 切换开发分支
-    await this.checkoutBranch(this.branch)
-    // 合并远程master分支和开发分支代码到本地开发分支
-    await this.pullRemoteMasterAndBranch()
-    // 将开发分支推送到远程仓库
-    await this.pushRemoteRepo(this.branch)
   }
 
   async pullRemoteMasterAndBranch() {
