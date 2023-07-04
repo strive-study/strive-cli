@@ -27,6 +27,7 @@
     "url": "https://github.com/strive-study/strive-cli/issues"
   },
   "dependencies": {
-    "socket.io-client": "^2.5.0"
+    "@strive-cli/log": "file:../../utils/log",
+    "socket.io-client": "^2.0.0"
   }
 }
