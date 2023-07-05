@@ -4,6 +4,13 @@ const get = require('lodash/get')
 const TIME_OUT = 5 * 60 * 1000
 const CONNECT_TIME_OUT = 5 * 1000
 const WS_SERVER = 'http://127.0.0.1:7001'
+const FAILED_CODE = [
+  'prepare failed',
+  'download failed',
+  'install failed',
+  'build'
+]
+
 function parseMsg(msg) {
   const action = get(msg, 'data.action')
   const message = get(msg, 'data.payload.message')
@@ -76,9 +83,18 @@ class CloudBuild {
       this.socket.emit('build')
       this.socket.on('build', msg => {
         const parsedMsg = parseMsg(msg)
-        log.success(parsedMsg.action, parsedMsg.message)
+        if (FAILED_CODE.indexOf(parsedMsg.action) >= 0) {
+          log.error(parsedMsg.action, parsedMsg.message)
+          clearTimeout(this.timer)
+          this.socket.disconnect()
+          this.socket.close()
+        } else {
+          log.success(parsedMsg.action, parsedMsg.message)
+        }
       })
-      this.socket.on('building', msg => {})
+      this.socket.on('building', msg => {
+        console.log(msg)
+      })
     })
   }
 }
