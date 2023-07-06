@@ -19,6 +19,7 @@ const GIT_TOKEN_FILE = '.git_token' //存储git token
 const GIT_OWNER_FILE = '.git_owner' //个人or组织
 const GIT_LOGIN_FILE = '.git_login' //登录用户名 个人 or 组织名
 const GIT_IGNORE_FILE = '.gitignore' //gitignore
+const GIT_PUBLISH_FILE = '.git_publish' // 发布云服务平台 OSS or other
 const GITHUB = 'github'
 const GITEE = 'gitee'
 const REPO_OWNER_USER = 'user'
@@ -51,6 +52,12 @@ const GIT_OWNER_TYPE_ONLY = [
     value: REPO_OWNER_USER
   }
 ]
+const GIT_PUBLISH_TYPE = [
+  {
+    name: 'OSS',
+    value: 'oss'
+  }
+]
 
 class Git {
   constructor(
@@ -59,7 +66,8 @@ class Git {
       refreshServer = false,
       refreshToken = false,
       refreshOwner = false,
-      buildCmd = ''
+      buildCmd = '',
+      prod = false
     }
   ) {
     this.name = name // 项目名称
@@ -78,6 +86,8 @@ class Git {
     this.refreshToken = refreshToken // 是否强制刷新远程仓库token
     this.refreshOwner = refreshOwner // 是否强制刷新远程仓库所属类型
     this.buildCmd = buildCmd // 云构建命令
+    this.gitPublish = null //静态资源服务器类型
+    this.prod = prod // 是否正式发布
   }
 
   async prepare() {
@@ -116,15 +126,20 @@ class Git {
 
   async publish() {
     await this.preparePublish()
-
     const cloudBuild = new CloudBuild(this, {
-      buildCmd: this.buildCmd
+      buildCmd: this.buildCmd,
+      type: this.gitPublish,
+      prod: this.prod
     })
+    await cloudBuild.prepare()
     await cloudBuild.init()
     await cloudBuild.build()
   }
 
   async preparePublish() {
+    log.info('开始进行云构建前代码检查')
+    const pkg = this.getPackageJson()
+
     if (this.buildCmd) {
       const cmdArr = this.buildCmd.split(' ')
       if (cmdArr[0] !== 'npm' && cmdArr[0] !== 'cnpm') {
@@ -133,6 +148,40 @@ class Git {
     } else {
       this.buildCmd = 'npm run build'
     }
+    const cmdArr = this.buildCmd.split(' ')
+    const lastCmd = cmdArr[cmdArr.length - 1]
+    if (!pkg.scripts || !Object.keys(pkg.scripts).includes(lastCmd) < 0) {
+      throw new Error(this.buildCmd + '命令不存在')
+    }
+    log.success('云构建代码预检查通过')
+    const gitPublishPath = this.createPath(GIT_PUBLISH_FILE)
+    let gitPublish = readFile(gitPublishPath)
+    if (!gitPublish) {
+      gitPublish = (
+        await inquirer.prompt({
+          type: 'list',
+          name: 'gitPublish',
+          choices: GIT_PUBLISH_TYPE,
+          message: '请选择您想要上传代码的平台'
+        })
+      ).gitPublish
+      writeFile(gitPublishPath, gitPublish)
+      log.success(
+        'git publish类型写入成功',
+        `${gitPublish} -> ${gitPublishPath}`
+      )
+    } else {
+      log.success('git publish类型获取成功', gitPublish)
+    }
+    this.gitPublish = gitPublish
+  }
+
+  getPackageJson() {
+    const pkgPath = path.resolve(this.dir, 'package.json')
+    if (!fs.existsSync(pkgPath)) {
+      throw new Error('package.json不存在!')
+    }
+    return fse.readJSONSync(pkgPath)
   }
 
   async initCommit() {

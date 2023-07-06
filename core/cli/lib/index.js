@@ -115,6 +115,7 @@ const registerCommand = () => {
     .option('--refreshToken', '强制更新远程仓库Token')
     .option('--refreshOwner', '强制更新远程仓库所属类型')
     .option('--buildCmd [buildCmd]', '构建命令型') // windows <> bug -> []代替
+    .option('--prod', '是否正式发布') // windows <> bug -> []代替
     .action(exec)
 
   program.on('option:debug', () => {

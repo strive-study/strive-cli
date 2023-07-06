@@ -8,7 +8,9 @@ const FAILED_CODE = [
   'prepare failed',
   'download failed',
   'install failed',
-  'build'
+  'build failed',
+  'pre-publish failed',
+  'publish failed'
 ]
 
 function parseMsg(msg) {
@@ -17,17 +19,25 @@ function parseMsg(msg) {
   return { action, message }
 }
 class CloudBuild {
-  constructor(git, options) {
-    this.git = git
-    this.buildCmd = options.buildCmd
+  constructor(git, { buildCmd, type, prod }) {
     this.timeout = TIME_OUT
     this.socket = null
+    this.git = git
+    this.buildCmd = buildCmd
+    this.type = type
+    this.prod = prod
   }
 
   handleTimeout(fn, timeout) {
     this.timer && clearTimeout(this.timer)
     log.info(`设置任务超时事件: ${timeout / 1000}秒`)
     this.timer = setTimeout(fn, timeout)
+  }
+
+  async prepare() {
+    // 获取OSS文件
+    // 判断当前项目OSS文件是否存在
+    // 如果存在且处于正式发布 是否选择覆盖安装
   }
 
   async init() {
@@ -38,7 +48,8 @@ class CloudBuild {
           name: this.git.name,
           branch: this.git.branch,
           version: this.git.version,
-          buildCmd: this.buildCmd
+          buildCmd: this.buildCmd,
+          prod: this.prod
         }
       })
 
