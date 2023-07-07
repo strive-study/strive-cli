@@ -28,6 +28,8 @@
   },
   "dependencies": {
     "@strive-cli/log": "file:../../utils/log",
+    "@strive-cli/request": "file:../../utils/request",
+    "inquirer": "^7.3.3",
     "socket.io-client": "^2.0.0"
   }
 }

@@ -132,8 +132,8 @@ class Git {
       prod: this.prod
     })
     await cloudBuild.prepare()
-    await cloudBuild.init()
-    await cloudBuild.build()
+    // await cloudBuild.init()
+    // await cloudBuild.build()
   }
 
   async preparePublish() {

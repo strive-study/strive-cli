@@ -1,9 +1,11 @@
 const io = require('socket.io-client')
 const log = require('@strive-cli/log')
 const get = require('lodash/get')
+const request = require('@strive-cli/request')
+const inquirer = require('inquirer')
 const TIME_OUT = 5 * 60 * 1000
 const CONNECT_TIME_OUT = 5 * 1000
-const WS_SERVER = 'http://127.0.0.1:7001'
+const WS_SERVER = 'http://127.0.0.1:3000'
 const FAILED_CODE = [
   'prepare failed',
   'download failed',
@@ -37,7 +39,36 @@ class CloudBuild {
   async prepare() {
     // 获取OSS文件
     // 判断当前项目OSS文件是否存在
-    // 如果存在且处于正式发布 是否选择覆盖安装
+    // 是否选择覆盖安装
+    if (this.prod) {
+      const projectName = this.git.name
+      const projectType = this.prod ? 'prod' : 'dev'
+      const ossProject = await request({
+        url: '/project/oss',
+        params: {
+          name: projectName,
+          type: projectType
+        }
+      })
+      console.log('ossProject', ossProject)
+      if (ossProject.code === 0 && ossProject.data.length > 0) {
+        const cover = (
+          await inquirer.prompt({
+            type: 'list',
+            choices: [
+              { name: '覆盖发布', value: true },
+              { name: '放弃发布', value: false }
+            ],
+            name: 'cover',
+            default: true,
+            message: `OSS已存在 [${projectName}] 项目, 是否强行覆盖发布?`
+          })
+        ).cover
+        if (!cover) {
+          throw new Error('发布终止')
+        }
+      }
+    }
   }
 
   async init() {
