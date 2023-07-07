@@ -50,7 +50,6 @@ class CloudBuild {
           type: projectType
         }
       })
-      console.log('ossProject', ossProject)
       if (ossProject.code === 0 && ossProject.data.length > 0) {
         const cover = (
           await inquirer.prompt({
