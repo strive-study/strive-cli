@@ -22,6 +22,7 @@ const TEMPLATE_TYPE_NORMAL = 'normal'
 const TEMPLATE_TYPE_CUSTOM = 'custom'
 
 const WHITE_COMMAND = ['npm', 'cnpm']
+const COMPONENT_FILE = '.componentrc'
 class InitCommand extends Command {
   init() {
     this.projectName = this._argv[0] || ''
@@ -120,12 +121,30 @@ class InitCommand extends Command {
 
     const ign = templateIgnore || []
     await this.ejsRender({ ignore: ['**/node_modules/**', ...ign] })
+    // 如果是组件类型，要生成组件配置文件
+    await this.createComponentrcFile(targetPath)
     let installRes
     installRes = await this.execCommand(installCommand)
     if (installRes !== 0) {
       throw new Error('依赖安装过程失败！')
     }
     await this.execCommand(startCommand)
+  }
+
+  async createComponentrcFile(targetPath) {
+    const curTemplateInfo = this.curTemplateInfo
+    const projectInfo = this.projectInfo
+    if (curTemplateInfo.tag.includes(COMPONENT_TYPE)) {
+      const componentData = {
+        ...projectInfo,
+        buildPath: curTemplateInfo.buildPath,
+        examplePath: curTemplateInfo.examplePath,
+        npmName: curTemplateInfo.npmName,
+        npmVersion: curTemplateInfo.version
+      }
+      const componentFile = path.resolve(targetPath, COMPONENT_FILE)
+      fs.writeFileSync(componentFile, JSON.stringify(componentData))
+    }
   }
 
   async installCustom() {
@@ -219,7 +238,7 @@ class InitCommand extends Command {
     function isValidName(v) {
       // 合法: a, a_b, a-b-c, a_b_c, a-b1-c1, a_b1_c1
       // 不合法:1, a_, a-, a_1,a-1
-      return /^[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])$/.test(
+      return /^(@[a-zA-Z0-9-_]+\/)?[a-zA-Z]+([-][a-zA-Z][a-zA-Z0-9]*|[_][a-zA-Z][a-zA-Z0-9]*|[a-zA-Z0-9])$/.test(
         v
       )
     }

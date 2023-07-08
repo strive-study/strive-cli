@@ -152,17 +152,17 @@ class Git {
     }
     if (this.prod && res) {
       // 打tag
+      // await this.checkTag() // 打tag
+      // await this.checkoutBranch('master') // 切换分支到master
+      // await this.mergeBranchToMaster() // 开发分支代码合并到master分支
+      // await this.pushRemoteRepo('master') // 代码推送到远程master
+      // await this.deleteLocalBranch() // 删除本地开发分支
+      // await this.deleteRemoteBranch() // 删除远程开发分支
       await this.runTask()
     }
   }
 
   async runTask() {
-    // await this.checkTag() // 打tag
-    // await this.checkoutBranch('master') // 切换分支到master
-    // await this.mergeBranchToMaster() // 开发分支代码合并到master分支
-    // await this.pushRemoteRepo('master') // 代码推送到远程master
-    // await this.deleteLocalBranch() // 删除本地开发分支
-    // await this.deleteRemoteBranch() // 删除远程开发分支
     const tasks = new Listr([
       {
         title: '自动生成远程仓库Tag',
