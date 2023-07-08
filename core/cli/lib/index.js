@@ -116,6 +116,9 @@ const registerCommand = () => {
     .option('--refreshOwner', '强制更新远程仓库所属类型')
     .option('--buildCmd [buildCmd]', '构建命令型') // windows <> bug -> []代替
     .option('--prod', '是否正式发布') // windows <> bug -> []代替
+    .option('--sshUser [sshUser]', '模板服务器用户名')
+    .option('--sshIp [sshIp]', '模板服务器Ip或域名')
+    .option('--sshPath [sshPath]', '模板服务器上传路径')
     .action(exec)
 
   program.on('option:debug', () => {

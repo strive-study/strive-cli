@@ -29,6 +29,7 @@
   "dependencies": {
     "@strive-cli/log": "file:../../utils/log",
     "@strive-cli/utils": "file:../../utils/utils",
+    "@strive-cli/request": "file:../../utils/request",
     "@strive-cli/cloudbuild": "file:../../models/cloudbuild",
     "axios": "^1.4.0",
     "fs-extra": "^11.1.1",
