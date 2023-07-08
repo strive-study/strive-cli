@@ -75,7 +75,9 @@ class InitCommand extends Command {
       })
 
       if (isConfirm) {
+        let spinner = spinnerStart('正在清空当前目录文件...')
         fse.emptyDirSync(localPath)
+        spinner.stop(true)
       }
     }
     return this.getProjectInfo()
@@ -180,6 +182,7 @@ class InitCommand extends Command {
       t => t.npmName === projectTemplate
     )
     const { npmName, version } = this.curTemplateInfo
+    // 固定, 与--targetPath无关
     let targetPath = path.resolve(userHome, '.strive-cli', 'template')
     let storeDir = path.resolve(targetPath, 'node_modules')
     const curTemplateNpm = new Package({
@@ -188,7 +191,7 @@ class InitCommand extends Command {
       packageName: npmName,
       packageVersion: version
     })
-    if (!(await curTemplateNpm.exists())) {
+    if (!(await curTemplateNpm.exists(true))) {
       const spinner = spinnerStart('正在下载模板')
       await sleep(1000)
       try {

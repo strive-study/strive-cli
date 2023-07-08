@@ -21,12 +21,11 @@ async function exec() {
   const command = cmd.name()
   const packageName = settings[command]
   const packageVersion = 'latest'
-
+  // --targetPath
   if (!targetPath) {
     // 生成缓存路径
     targetPath = path.resolve(homePath, CACHE_DIR)
     storeDir = path.resolve(targetPath, 'node_modules')
-
     pkg = new Package({
       targetPath,
       storeDir,
@@ -41,7 +40,7 @@ async function exec() {
     //   await pkg.install()
     //   // install package
     // }
-    // new
+    // 使用远程command包, 需要本地缓存一份
     if (!(await pkg.exists())) {
       await pkg.install()
     }

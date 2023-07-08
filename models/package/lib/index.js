@@ -3,6 +3,8 @@ const pathExists = require('path-exists').sync
 const fse = require('fs-extra')
 const npminstall = require('npminstall')
 const pkgDir = require('pkg-dir').sync
+const semver = require('semver')
+const inquirer = require('inquirer')
 const log = require('@strive-cli/log')
 const { isObject } = require('@strive-cli/utils')
 const { getDefaultRegistry, getNpmInfo } = require('@strive-cli/get-npm-info')
@@ -24,11 +26,40 @@ class Package {
     // this.cacheFilePathPrefix = this.packageName.replace('/', '_')
   }
 
-  async exists() {
+  async exists(checkVersion = false) {
     if (this.storeDir) {
       // 缓存模式 未指定targetPath
       await this.prepare()
-      return pathExists(this.cacheFilePath)
+      // init publish命令无需检查版本
+      if (!checkVersion) {
+        return pathExists(this.cacheFilePath)
+      } else {
+        const isExists = pathExists(this.cacheFilePath)
+        if (isExists) {
+          const pkgPath = path.resolve(this.cacheFilePath, 'package.json')
+          const pkg = fse.readJSONSync(pkgPath)
+          if (semver.gt(this.packageVersion, pkg.version)) {
+            const update = (
+              await inquirer.prompt({
+                type: 'list',
+                message: '当前模板不是最新版, 是否更新最新版模板?',
+                choices: [
+                  { name: '是', value: true },
+                  { name: '否', value: false }
+                ],
+                name: 'update'
+              })
+            ).update
+            if (update) {
+              return false
+            } else {
+              return pathExists(this.cacheFilePath)
+            }
+          } else {
+            return pathExists(this.cacheFilePath)
+          }
+        }
+      }
     } else {
       return pathExists(this.targetPath)
     }
