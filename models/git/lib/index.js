@@ -10,6 +10,8 @@ const CloudBuild = require('@strive-cli/cloudbuild')
 const terminalLink = require('terminal-link')
 const semver = require('semver')
 const inquirer = require('inquirer')
+const Listr = require('listr')
+const { Observable } = require('rxjs')
 const GitHub = require('./github')
 const Gitee = require('./gitee')
 const template = require('./gitignore')
@@ -150,55 +152,128 @@ class Git {
     }
     if (this.prod && res) {
       // 打tag
-      await this.checkTag() // 打tag
-      await this.checkoutBranch('master') // 切换分支到master
-      await this.mergeBranchToMaster() // 开发分支代码合并到master分支
-      await this.pushRemoteRepo('master') // 代码推送到远程master
-      await this.deleteLocalBranch() // 删除本地开发分支
-      await this.deleteRemoteBranch() // 删除远程开发分支
+      await this.runTask()
     }
   }
 
+  async runTask() {
+    // await this.checkTag() // 打tag
+    // await this.checkoutBranch('master') // 切换分支到master
+    // await this.mergeBranchToMaster() // 开发分支代码合并到master分支
+    // await this.pushRemoteRepo('master') // 代码推送到远程master
+    // await this.deleteLocalBranch() // 删除本地开发分支
+    // await this.deleteRemoteBranch() // 删除远程开发分支
+    const tasks = new Listr([
+      {
+        title: '自动生成远程仓库Tag',
+        task: () =>
+          new Listr([
+            {
+              title: '创建Tag',
+              task: () => {
+                return new Observable(async observer => {
+                  observer.next('正在创建Tag')
+                  await this.checkTag()
+                  observer.complete()
+                })
+              }
+            },
+            {
+              title: '切换分支到Master',
+              task: () => {
+                return new Observable(async observer => {
+                  observer.next('正在切换Master分支')
+                  await this.checkoutBranch('master')
+                  observer.complete()
+                })
+              }
+            },
+            {
+              title: '开发分支代码合并到Master分支',
+              task: () => {
+                return new Observable(async observer => {
+                  observer.next('正在合并到master分支')
+                  await this.mergeBranchToMaster()
+                  observer.complete()
+                })
+              }
+            },
+            {
+              title: '代码推送到远程Master',
+              task: () => {
+                return new Observable(async observer => {
+                  observer.next('正在推送到Master分支')
+                  await this.pushRemoteRepo('master')
+                  observer.complete()
+                })
+              }
+            },
+            {
+              title: '删除本地开发分支',
+              task: () => {
+                return new Observable(async observer => {
+                  observer.next('正在删除本地开发分支')
+                  await this.deleteLocalBranch()
+                  observer.complete()
+                })
+              }
+            },
+            {
+              title: '删除远程开发分支',
+              task: () => {
+                return new Observable(async observer => {
+                  observer.next('正在删除远程开发分支')
+                  await this.deleteRemoteBranch()
+                  observer.complete()
+                })
+              }
+            }
+          ])
+      }
+    ])
+    tasks.run()
+  }
+
   async mergeBranchToMaster() {
-    log.info('开始合并代码', `[${this.branch}] -> [master]`)
+    // log.info('开始合并代码', `[${this.branch}] -> [master]`)
     await this.git.mergeFromTo(this.branch, 'master')
-    log.success('代码合并成功', `[${this.branch}] -> [master]`)
+    // log.success('代码合并成功', `[${this.branch}] -> [master]`)
   }
 
   async deleteLocalBranch() {
-    log.info('开始删除本地开发分支', this.branch)
+    // log.info('开始删除本地开发分支', this.branch)
     await this.git.deleteLocalBranch(this.branch)
-    log.success('删除本地开发分支成功', this.branch)
+    // log.success('删除本地开发分支成功', this.branch)
   }
 
   async deleteRemoteBranch() {
-    log.info('开始删除远程开发分支', this.branch)
+    // log.info('开始删除远程开发分支', this.branch)
     await this.git.push(['origin', '--delete', this.branch])
-    log.success('删除远程开发分支成功', this.branch)
+    // log.success('删除远程开发分支成功', this.branch)
   }
 
   async checkTag() {
-    log.info('获取远程tag列表')
+    // log.info('获取远程tag列表')
     const tag = `${VERSION_RELEASE}/${this.version}`
     const tagList = await this.getRemoteBranchList(VERSION_RELEASE)
     if (tagList.includes(this.version)) {
-      log.info('远程tag已存在', tag)
+      // log.info('远程tag已存在', tag)
       // 删除远程tag
       await this.git.push(['origin', `:refs/tags/${tag}`])
-      log.success('远程tag已删除', tag)
+      // log.success('远程tag已删除', tag)
     }
     // 删除本地tag
     const localTagList = await this.git.tags()
     if (localTagList.all.includes(tag)) {
-      log.info('本地tag已存在', tag)
+      // log.info('本地tag已存在', tag)
       await this.git.tag(['-d', tag])
-      log.success('本地tag已删除', tag)
+      // log.success('本地tag已删除', tag)
     }
     // 重新创建tag
     await this.git.addTag(tag)
-    log.success('本地tag创建成功', tag)
+    // log.success('本地tag创建成功', tag)
     await this.git.pushTags('origin')
-    log.success('远程tag推送成功', tag)
+    // log.success('远程tag推送成功', tag)
   }
 
   async uploadTemplate() {
@@ -311,9 +386,9 @@ class Git {
   }
 
   async pushRemoteRepo(branchName) {
-    log.info(`推送代码至${branchName}分支`)
+    // log.info(`推送代码至${branchName}分支`)
     await this.git.push('origin', branchName)
-    log.success('推送代码成功')
+    // log.success('推送代码成功')
   }
 
   async checkRemoteMaster() {
@@ -573,7 +648,7 @@ class Git {
       // 创建分支
       await this.git.checkoutLocalBranch(branch)
     }
-    log.success(`分支切换到${branch}`)
+    // log.success(`分支切换到${branch}`)
   }
 
   async checkStash() {
