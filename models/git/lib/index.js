@@ -31,6 +31,7 @@ const REPO_OWNER_USER = 'user'
 const REPO_OWNER_ORG = 'org'
 const VERSION_RELEASE = 'release'
 const VERSION_DEV = 'dev'
+const COMPONENT_FILE = '.componentrc'
 const GIT_SERVER_TYPE = [
   {
     name: 'Github',
@@ -119,7 +120,37 @@ class Git {
     await this.init() // 初始化本地仓库 .git
   }
 
-  async checkComponent() {}
+  async checkComponent() {
+    let isComponent = this.isComponent()
+    if (isComponent) {
+      log.info('开始检查build结果')
+      if (!this.buildCmd) {
+        this.buildCmd = 'npm run build'
+      }
+      cp.execSync(this.buildCmd, {
+        cwd: this.dir
+      })
+      // dist build
+      const buildPath = path.resolve(this.dir, isComponent.buildPath)
+      if (!fs.existsSync(buildPath)) {
+        throw new Error(`构建结果: ${buildPath}不存在!`)
+      }
+      const pkg = this.getPackageJson()
+      if (!pkg || !pkg.files.includes(isComponent.buildPath)) {
+        throw new Error(
+          `package.json中files属性未添加构建结果目录: [${isComponent.buildPath}], 请在package.json中手动检查`
+        )
+      }
+      log.success('build结果检查通过')
+    }
+  }
+
+  isComponent() {
+    const componentFilePath = path.resolve(this.dir, COMPONENT_FILE)
+    return (
+      fs.existsSync(componentFilePath) && fse.readJSONSync(componentFilePath)
+    )
+  }
 
   async init() {
     if (await this.getRemote()) {
@@ -447,7 +478,6 @@ class Git {
   async getRemote() {
     const gitPath = path.resolve(this.dir, GIT_ROOT_DIR)
     this.remote = this.gitServer.getRemote(this.login, this.name)
-    console.log('--------', fs.existsSync(gitPath), gitPath)
     if (fs.existsSync(gitPath)) {
       log.success('git已完成初始化')
       return true
