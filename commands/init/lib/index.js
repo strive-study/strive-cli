@@ -75,9 +75,9 @@ class InitCommand extends Command {
       })
 
       if (isConfirm) {
-        let spinner = spinnerStart('正在清空当前目录文件...')
+        // let spinner = spinnerStart('正在清空当前目录文件...')
         fse.emptyDirSync(localPath)
-        spinner.stop(true)
+        // spinner.stop(true)
       }
     }
     return this.getProjectInfo()
@@ -213,6 +213,7 @@ class InitCommand extends Command {
   async ejsRender({ ignore }) {
     const dir = process.cwd()
     const projectInfo = this.projectInfo
+    console.log('this.projectInfo', this.projectInfo)
     const files = await glob('**', {
       cwd: dir,
       ignore,

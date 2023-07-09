@@ -78,7 +78,13 @@ class Git {
       sshPath = ''
     }
   ) {
-    this.name = name // 项目名称
+    if (name.startsWith('@') && name.indexOf('/') > 0) {
+      // @strive-cli/component-test -> strive-cli_component-test
+      const nameArray = name.split('/')
+      this.name = nameArray.join('_').replace('@', '')
+    } else {
+      this.name = name // 项目名称
+    }
     this.version = version
     this.dir = dir // 项目源码目录
     this.git = SimpleGit(dir)
@@ -109,8 +115,11 @@ class Git {
     await this.checkGitOwner() // 确认远程仓库类型
     await this.checkRepo() // 检查并创建远程仓库
     this.checkGitignore() // 检查并创建 .gitignore
+    await this.checkComponent() //组件合法性检查
     await this.init() // 初始化本地仓库 .git
   }
+
+  async checkComponent() {}
 
   async init() {
     if (await this.getRemote()) {
@@ -438,6 +447,7 @@ class Git {
   async getRemote() {
     const gitPath = path.resolve(this.dir, GIT_ROOT_DIR)
     this.remote = this.gitServer.getRemote(this.login, this.name)
+    console.log('--------', fs.existsSync(gitPath), gitPath)
     if (fs.existsSync(gitPath)) {
       log.success('git已完成初始化')
       return true

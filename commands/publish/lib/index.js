@@ -15,16 +15,11 @@ class PublishCommand extends Command {
   async exec() {
     try {
       const startTime = new Date().getTime()
-      // 初始化检查
-      this.prepare()
-      // gitflow自动化
-      const git = new Git(this.projectInfo, this.options)
-      // 自动化提交准备和仓库初始化
-      await git.prepare()
-      // 代码自动化提交
-      await git.commit()
-      // 云构建云发布
-      await git.publish()
+      this.prepare() // 初始化检查
+      const git = new Git(this.projectInfo, this.options) // gitflow自动化
+      await git.prepare() // 自动化提交准备和仓库初始化
+      await git.commit() // 代码自动化提交
+      await git.publish() // 云构建云发布
       const endTime = new Date().getTime()
       log.info(`本次发布耗时：${Math.floor(endTime - startTime) / 1000}秒`)
     } catch (e) {
