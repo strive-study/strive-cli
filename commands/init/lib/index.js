@@ -213,7 +213,6 @@ class InitCommand extends Command {
   async ejsRender({ ignore }) {
     const dir = process.cwd()
     const projectInfo = this.projectInfo
-    console.log('this.projectInfo', this.projectInfo)
     const files = await glob('**', {
       cwd: dir,
       ignore,

@@ -1,10 +1,16 @@
 const path = require('path')
 const { homedir } = require('os')
 const cp = require('child_process')
+const fs = require('fs')
 const fse = require('fs-extra')
 const SimpleGit = require('simple-git')
 const log = require('@strive-cli/log')
-const { readFile, writeFile, spinnerStart } = require('@strive-cli/utils')
+const {
+  readFile,
+  writeFile,
+  spinnerStart,
+  spawnAsync
+} = require('@strive-cli/utils')
 const request = require('@strive-cli/request')
 const CloudBuild = require('@strive-cli/cloudbuild')
 const terminalLink = require('terminal-link')
@@ -15,6 +21,7 @@ const { Observable } = require('rxjs')
 const GitHub = require('./github')
 const Gitee = require('./gitee')
 const template = require('./gitignore')
+const ComponentRequest = require('./componentRequest')
 
 const DEFAULT_CLI_HOME = '.strive-cli'
 const GIT_ROOT_DIR = '.git'
@@ -178,27 +185,71 @@ class Git {
   }
 
   async publish() {
-    await this.preparePublish()
-    const cloudBuild = new CloudBuild(this, {
-      buildCmd: this.buildCmd,
-      type: this.gitPublish,
-      prod: this.prod
-    })
-    await cloudBuild.prepare()
-    await cloudBuild.init()
-    const res = await cloudBuild.build()
-    if (res) {
-      await this.uploadTemplate()
+    let res = false
+    if (this.isComponent()) {
+      // 组件
+      log.info('开始发布组件')
+      res = await this.saveComponentToDB()
+    } else {
+      // 项目
+      await this.preparePublish()
+      const cloudBuild = new CloudBuild(this, {
+        buildCmd: this.buildCmd,
+        type: this.gitPublish,
+        prod: this.prod
+      })
+      await cloudBuild.prepare()
+      await cloudBuild.init()
+      res = await cloudBuild.build()
+      if (res) {
+        await this.uploadTemplate()
+      }
     }
     if (this.prod && res) {
       // 打tag
-      // await this.checkTag() // 打tag
-      // await this.checkoutBranch('master') // 切换分支到master
-      // await this.mergeBranchToMaster() // 开发分支代码合并到master分支
-      // await this.pushRemoteRepo('master') // 代码推送到远程master
-      // await this.deleteLocalBranch() // 删除本地开发分支
-      // await this.deleteRemoteBranch() // 删除远程开发分支
+      await this.uploadComponentToNpm()
       await this.runTask()
+    }
+  }
+
+  async saveComponentToDB() {
+    // 组件信息上传至数据库
+    log.info('上传组件信息至OSS, 并写入数据库')
+    const componentFile = this.isComponent() // .componentrc内容
+    let componentExamplePath = path.resolve(this.dir, componentFile.examplePath)
+    let dirs = fs.readdirSync(componentExamplePath)
+    if (dirs.includes('dist')) {
+      componentExamplePath = path.resolve(componentExamplePath, 'dist')
+      dirs = fs.readdirSync(componentExamplePath)
+      componentFile.examplePath = `${componentFile.examplePath}/dist`
+    }
+    dirs = dirs.filter(dir => dir.match(/^index(\d)*.html$/))
+    componentFile.exampleList = dirs
+    componentFile.exampleRealPath = componentExamplePath
+    const data = await ComponentRequest.createComponent({
+      component: componentFile,
+      git: {
+        type: this.gitServer.type,
+        remote: this.remote,
+        version: this.version,
+        branch: this.branch,
+        login: this.login,
+        owner: this.owner,
+        repo: this.repo
+      }
+    })
+    // 组件多预览页面上传至OSS
+    return true
+  }
+
+  async uploadComponentToNpm() {
+    if (this.isComponent()) {
+      log.info('开始发布NPM')
+      await spawnAsync('npm', 'publish', {
+        cwd: this.dir,
+        stdio: 'inherit'
+      })
+      log.success('npm发布成功')
     }
   }
 

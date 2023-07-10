@@ -7,7 +7,6 @@ const pathExists = require('path-exists').sync
 const dotenv = require('dotenv')
 const commander = require('commander')
 let log = require('@strive-cli/log')
-const init = require('@strive-cli/init')
 const exec = require('@strive-cli/exec')
 const pkg = require('../package.json')
 const { getNpmInfo } = require('@strive-cli/get-npm-info')
