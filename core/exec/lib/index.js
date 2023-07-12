@@ -5,7 +5,8 @@ const { spawn } = require('@strive-cli/utils')
 
 const settings = {
   init: '@strive-cli/init', //多init包
-  publish: '@strive-cli/publish'
+  publish: '@strive-cli/publish',
+  add: '@strive-cli/add'
 }
 
 const CACHE_DIR = 'dependencies'

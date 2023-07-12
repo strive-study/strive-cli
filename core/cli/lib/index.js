@@ -105,7 +105,6 @@ const registerCommand = () => {
   program
     .command('init [projectName]')
     .option('-f, --force', '是否强制初始化项目', false)
-    // .action(init)
     .action(exec)
 
   program
@@ -118,6 +117,11 @@ const registerCommand = () => {
     .option('--sshUser [sshUser]', '模板服务器用户名')
     .option('--sshIp [sshIp]', '模板服务器Ip或域名')
     .option('--sshPath [sshPath]', '模板服务器上传路径')
+    .action(exec)
+
+  program
+    .command('add [templateName]')
+    .option('-f, --force', '是否强制添加代码', false)
     .action(exec)
 
   program.on('option:debug', () => {
