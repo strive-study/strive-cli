@@ -75,9 +75,10 @@ class InitCommand extends Command {
       })
 
       if (isConfirm) {
-        // let spinner = spinnerStart('正在清空当前目录文件...')
+        let spinner = spinnerStart('正在清空当前目录文件...')
+        await sleep()
         fse.emptyDirSync(localPath)
-        // spinner.stop(true)
+        spinner.stop(true)
       }
     }
     return this.getProjectInfo()

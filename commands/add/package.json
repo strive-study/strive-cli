@@ -15,7 +15,12 @@
   ],
   "dependencies": {
     "@strive-cli/command": "file:../../models/command",
-    "@strive-cli/log": "file:../../utils/log"
+    "@strive-cli/log": "file:../../utils/log",
+    "@strive-cli/package": "file:../../utils/package",
+    "@strive-cli/utils": "file:../../utils/utils",
+    "fs-extra": "^7.0.1",
+    "inquirer": "^7.3.3",
+    "path-exists": "^4.0.0"
   },
   "publishConfig": {
     "access": "public"

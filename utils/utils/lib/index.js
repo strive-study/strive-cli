@@ -14,7 +14,7 @@ function spinnerStart(msg) {
   return spinner
 }
 
-function sleep(ts) {
+function sleep(ts = 1000) {
   return new Promise(resolve => setTimeout(resolve, ts))
 }
 
