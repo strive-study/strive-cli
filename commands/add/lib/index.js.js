@@ -21,19 +21,119 @@ const PAGE_TEMPLATE = [
     ignore: ['assets/**']
   }
 ]
+const SECTION_TEMPLATE = [
+  {
+    name: 'Vue3代码片段',
+    npmName: 'strive-cli-template-section-vue',
+    version: 'latest'
+  }
+]
+const ADD_MODE_SECTION = 'section'
+const ADD_MODE_PAGE = 'page'
 class AddCommand extends Command {
   init() {
     log.info('init')
   }
 
   async exec() {
+    this.addMode = (await this.getAddMode()).addMode
+    console.log(this.addMode)
+    if (this.addMode === ADD_MODE_SECTION) {
+      await this.installSectionTemplate()
+    } else {
+      await this.installPageTemplate()
+    }
+  }
+
+  async installSectionTemplate() {
+    this.dir = process.cwd() // 获取安装文件夹
+    this.sectionTemplate = await this.getTemplate(ADD_MODE_SECTION) // 获取代码片段模板
+    await this.prepare(ADD_MODE_SECTION)
+    await this.downloadTemplate(ADD_MODE_SECTION) // 下载模板
+    await this.installSection() // 安装代码片段
+    console.log('this.sectionTemplatePkg', this.sectionTemplatePkg)
+  }
+
+  async installPageTemplate() {
     this.dir = process.cwd() // 获取页面安装文件夹
-    const pageTemplate = await this.getPageTemplate() // 获取页面模板
-    this.pageTemplate = pageTemplate
-    await this.downloadTemplate() // 下载页面模板
-    await this.prepare() // 检查目录重名
+    this.pageTemplate = await this.getTemplate(ADD_MODE_PAGE) // 获取页面模板
+    await this.downloadTemplate(ADD_MODE_PAGE) // 下载页面模板
+    await this.prepare(ADD_MODE_PAGE) // 检查目录重名
     await this.installTemplate() // 安装页面模板
-    // 合并页面模板依赖
+  }
+
+  async installSection() {
+    // 选择要插入的源码文件
+    let files = fs
+      .readdirSync(this.dir, { withFileTypes: true })
+      .map(file => (file.isFile() ? file.name : null))
+      .filter(_ => _)
+      .map(file => ({ value: file, name: file }))
+    if (!files.length) throw new Error('当前文件夹下没有文件!')
+    const codeFile = (
+      await inquirer.prompt({
+        type: 'list',
+        message: '请选择要插入代码片段的源码文件',
+        name: 'codeFile',
+        choices: files
+      })
+    ).codeFile
+    // 输入插入代码片段在第几行插入
+    const lineNumber = (
+      await inquirer.prompt({
+        type: 'input',
+        message: '请输入要插入的行数:',
+        name: 'lineNumber',
+        validate(value) {
+          const done = this.async()
+          if (!value || !value.trim()) {
+            done('请输入要插入的行数')
+            return
+          } else if (value >= 0 && Math.floor(value) === Number(value)) {
+            done(null, true)
+          } else {
+            done('插入的行数必须为整数')
+            return
+          }
+        }
+      })
+    ).lineNumber
+    // 分割源码文件, 按行查找插入位置
+    const codeFilePath = path.resolve(this.dir, codeFile)
+    const code = fs.readFileSync(codeFilePath, 'utf-8')
+    const codeArr = code.split('\n')
+    // 以组件形式插入代码片段
+    const componentNameOriginal = this.sectionTemplate.sectionName
+    const componentName = this.sectionTemplate.sectionName.toLocaleLowerCase()
+    codeArr.splice(lineNumber, 0, `<${componentName}></${componentName}>`)
+    // 插入代码片段的import语句
+    const scriptIndex = codeArr.findIndex(
+      code => code.replace(/\s/g, '') === '<script>'
+    )
+    codeArr.splice(
+      scriptIndex + 1,
+      0,
+      `import ${componentNameOriginal} from './component/${componentNameOriginal}/index.vue'`
+    )
+    console.log(codeArr)
+  }
+
+  async getAddMode() {
+    return inquirer.prompt({
+      type: 'list',
+      name: 'addMode',
+      message: '请选择代码添加模式',
+      choices: [
+        {
+          name: '代码片段',
+          value: ADD_MODE_SECTION
+        },
+        {
+          name: '页面模板',
+          value: ADD_MODE_PAGE
+        }
+      ]
+    })
   }
 
   async installTemplate() {
@@ -168,24 +268,27 @@ class AddCommand extends Command {
     return o
   }
 
-  async getPageTemplate() {
+  async getTemplate(addMode = ADD_MODE_PAGE) {
+    const name = addMode === ADD_MODE_PAGE ? '页面' : '代码片段'
+    const TEMPLATE =
+      addMode === ADD_MODE_PAGE ? PAGE_TEMPLATE : SECTION_TEMPLATE
     const pageTemplateName = (
       await inquirer.prompt({
         type: 'list',
         name: 'pageTemplate',
-        message: '请选择页面模板',
-        choices: this.createChoices()
+        message: `请选择${name}模板`,
+        choices: this.createChoices(addMode)
       })
     ).pageTemplate
-    const pageTemplate = PAGE_TEMPLATE.find(
+    const pageTemplate = TEMPLATE.find(
       item => item.npmName === pageTemplateName
     )
-    if (!pageTemplate) throw new Error('页面模板不存在!')
+    if (!pageTemplate) throw new Error(`${name}模板不存在!`)
     const pageName = (
       await inquirer.prompt({
         type: 'input',
         name: 'pageName',
-        message: '请输入页面的名称',
+        message: `请输入${name}的名称`,
         default: '',
         validate(value) {
           const done = this.async()
@@ -197,52 +300,79 @@ class AddCommand extends Command {
         }
       })
     ).pageName
-    pageTemplate.pageName = pageName
+    if (addMode === ADD_MODE_PAGE) {
+      pageTemplate.pageName = pageName
+    } else {
+      pageTemplate.sectionName = pageName
+    }
     return pageTemplate
   }
 
-  async downloadTemplate() {
+  async downloadTemplate(addMode) {
+    const name = addMode === ADD_MODE_PAGE ? '页面' : '代码片段'
     const targetPath = path.resolve(homedir(), '.strive-cli', 'template')
     const storeDir = path.resolve(targetPath, 'node_modules')
-    const { npmName, version } = this.pageTemplate
-    const pageTemplatePkg = new Package({
+    const { npmName, version } =
+      addMode === ADD_MODE_PAGE ? this.pageTemplate : this.sectionTemplate
+    const templatePkg = new Package({
       targetPath,
       storeDir,
       packageName: npmName,
       packageVersion: version
     })
-    this.pageTemplatePkg = pageTemplatePkg
-    if (!(await pageTemplatePkg.exists(true))) {
-      const spinner = spinnerStart('正在下载页面模板')
+    if (addMode === ADD_MODE_PAGE) {
+      this.pageTemplatePkg = templatePkg
+    } else {
+      this.sectionTemplatePkg = templatePkg
+    }
+    if (!(await templatePkg.exists(true))) {
+      const spinner = spinnerStart(`正在下载${name}模板`)
       await sleep()
       try {
-        await pageTemplatePkg.install()
+        await templatePkg.install()
       } catch (error) {
         throw new Error(error.message)
       } finally {
         spinner.stop(true)
-        if (await pageTemplatePkg.exists()) {
-          log.success('下载页面模板成功')
+        if (await templatePkg.exists()) {
+          log.success(`下载${name}模板成功`)
         }
       }
     }
   }
 
-  async prepare() {
+  async prepare(addMode) {
     // 最终拷贝路径
-    this.targetPath = path.resolve(this.dir, this.pageTemplate.pageName)
+    if (addMode === ADD_MODE_PAGE) {
+      this.targetPath = path.resolve(this.dir, this.pageTemplate.pageName)
+    } else {
+      this.targetPath = path.resolve(
+        this.dir,
+        'components',
+        this.sectionTemplate.sectionName
+      )
+    }
     if (await pathExists(this.targetPath)) {
       throw new Error('页面文件夹已存在')
     }
   }
 
-  createChoices() {
-    return PAGE_TEMPLATE.map(item => {
-      return {
-        name: item.name,
-        value: item.npmName
-      }
-    })
+  createChoices(addMode = ADD_MODE_PAGE) {
+    if (addMode === ADD_MODE_PAGE) {
+      return PAGE_TEMPLATE.map(item => {
+        return {
+          name: item.name,
+          value: item.npmName
+        }
+      })
+    } else {
+      return SECTION_TEMPLATE.map(item => {
+        return {
+          name: item.name,
+          value: item.npmName
+        }
+      })
+    }
   }
 }
 const init = argv => {
