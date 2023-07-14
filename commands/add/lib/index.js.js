@@ -9,7 +9,7 @@ const ejs = require('ejs')
 const pkgUp = require('pkg-up')
 const Command = require('@strive-cli/command')
 const Package = require('@strive-cli/package')
-const { sleep, spinnerStart } = require('@strive-cli/utils')
+const { sleep, spinnerStart, spawnAsync } = require('@strive-cli/utils')
 const log = require('@strive-cli/log')
 const PAGE_TEMPLATE = [
   {
@@ -91,13 +91,20 @@ class AddCommand extends Command {
   async dependenciesMerge({ targetPath, templatePath }) {
     const templatePkgPath = pkgUp.sync({ cwd: templatePath })
     const targetPkgPath = pkgUp.sync({ cwd: targetPath })
-    const templateDep = fse.readJSONSync(templatePkgPath).dependencies || {}
-    const targetDep = fse.readJSONSync(targetPkgPath).dependencies || {}
+    const templatePkg = fse.readJSONSync(templatePkgPath)
+    const targetPkg = fse.readJSONSync(targetPkgPath)
+    const templateDep = templatePkg.dependencies || {}
+    const targetDep = targetPkg.dependencies || {}
     // 比较两个依赖差别
     const templateDepArr = obj2Array(templateDep)
     const targetDepArr = obj2Array(targetDep)
     const finalDep = depDiff(templateDepArr, targetDepArr)
-    console.log('finalDep', finalDep)
+    targetPkg.dependencies = this.array2Obj(finalDep)
+    fse.writeJSONSync(targetPkgPath, targetPkg, { spaces: 2 })
+    // 自动安装依赖
+    log.info('正在安装页面模板的依赖')
+    await this.execCommand('npm install', path.dirname(targetPkgPath))
+    log.success('正在页面模板依赖成功')
     function obj2Array(o) {
       const arr = []
       Object.keys(o).forEach(key => {
@@ -125,6 +132,29 @@ class AddCommand extends Command {
       })
       return finalDep
     }
+  }
+
+  async execCommand(command, cwd) {
+    let res
+    if (command) {
+      const cmdArr = command.split(' ')
+      const cmd = cmdArr[0]
+      const args = cmdArr.slice(1)
+      res = await spawnAsync(cmd, args, {
+        stdio: 'inherit',
+        cwd
+      })
+      if (res != 0) {
+        throw new Error(command + '命令执行失败!')
+      }
+      return res
+    }
+  }
+
+  array2Obj(arr) {
+    const o = {}
+    arr.forEach(item => (o[item.key] = item.value))
+    return o
   }
 
   async getPageTemplate() {
