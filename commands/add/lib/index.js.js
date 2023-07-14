@@ -9,6 +9,7 @@ const ejs = require('ejs')
 const pkgUp = require('pkg-up')
 const Command = require('@strive-cli/command')
 const Package = require('@strive-cli/package')
+const semver = require('semver')
 const { sleep, spinnerStart, spawnAsync } = require('@strive-cli/utils')
 const log = require('@strive-cli/log')
 const PAGE_TEMPLATE = [
@@ -124,7 +125,17 @@ class AddCommand extends Command {
           targetDep => targetDep.key === templateDep.key
         )
         if (duplicatedDep) {
-          log.verbose('查询到重复依赖：', duplicatedDep)
+          const templateRange = semver
+            .validRange(templateDep.value)
+            .split('<')[1]
+          const targetRange = semver
+            .validRange(duplicatedDep.value)
+            .split('<')[1]
+          if (templateRange !== targetRange) {
+            log.warn(
+              `${templateDep.key}'冲突, ${templateDep.value} => ${duplicatedDep.value}`
+            )
+          }
         } else {
           // 需要合并到targetPkgPath的key
           finalDep.push(templateDep)
@@ -215,7 +226,6 @@ class AddCommand extends Command {
         }
       }
     }
-    console.log(pageTemplatePkg)
   }
 
   async prepare() {
