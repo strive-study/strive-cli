@@ -25,7 +25,14 @@ const SECTION_TEMPLATE = [
   {
     name: 'Vue3代码片段',
     npmName: 'strive-cli-template-section-vue',
-    version: 'latest'
+    version: 'latest',
+    targetPath: ''
+  },
+  {
+    name: 'Vue3代码片段debug',
+    npmName: 'strive-cli-template-section-vue-debug',
+    version: 'latest',
+    targetPath: 'src/'
   }
 ]
 const ADD_MODE_SECTION = 'section'
@@ -122,8 +129,10 @@ class AddCommand extends Command {
     // 创建代码片段组件目录
     const templatePath = path.resolve(
       this.sectionTemplatePkg.cacheFilePath,
-      'template'
+      'template',
+      this.sectionTemplate.targetPath
     )
+    console.log('templatePath', templatePath)
     fse.ensureDirSync(this.targetPath)
     fse.copySync(templatePath, this.targetPath)
     log.success('代码片段拷贝成功')
