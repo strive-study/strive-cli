@@ -126,6 +126,7 @@ class AddCommand extends Command {
     )
     fse.ensureDirSync(this.targetPath)
     fse.copySync(templatePath, this.targetPath)
+    log.success('代码片段拷贝成功')
   }
 
   async getAddMode() {
