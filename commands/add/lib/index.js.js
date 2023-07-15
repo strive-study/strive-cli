@@ -113,9 +113,19 @@ class AddCommand extends Command {
     codeArr.splice(
       scriptIndex + 1,
       0,
-      `import ${componentNameOriginal} from './component/${componentNameOriginal}/index.vue'`
+      `import ${componentNameOriginal} from './components/${componentNameOriginal}/index.vue'`
     )
-    console.log(codeArr)
+    // 代码合并为string
+    const newCode = codeArr.join('\n')
+    fs.writeFileSync(codeFilePath, newCode, 'utf-8')
+    log.success('代码片段写入成功')
+    // 创建代码片段组件目录
+    const templatePath = path.resolve(
+      this.sectionTemplatePkg.cacheFilePath,
+      'template'
+    )
+    fse.ensureDirSync(this.targetPath)
+    fse.copySync(templatePath, this.targetPath)
   }
 
   async getAddMode() {
