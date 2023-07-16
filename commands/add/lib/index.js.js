@@ -16,6 +16,8 @@ const request = require('@strive-cli/request')
 
 const ADD_MODE_SECTION = 'section'
 const ADD_MODE_PAGE = 'page'
+const CUSTOM_TYPE = 'custom'
+const NORMAL_TYPE = 'normal'
 class AddCommand extends Command {
   async getPageTemplate() {
     return request({
@@ -35,7 +37,6 @@ class AddCommand extends Command {
 
   async exec() {
     this.addMode = (await this.getAddMode()).addMode
-    console.log(this.addMode)
     if (this.addMode === ADD_MODE_SECTION) {
       await this.installSectionTemplate()
     } else {
@@ -49,7 +50,6 @@ class AddCommand extends Command {
     await this.prepare(ADD_MODE_SECTION)
     await this.downloadTemplate(ADD_MODE_SECTION) // 下载模板
     await this.installSection() // 安装代码片段
-    console.log('this.sectionTemplatePkg', this.sectionTemplatePkg)
   }
 
   async installPageTemplate() {
@@ -123,7 +123,6 @@ class AddCommand extends Command {
       'template',
       this.sectionTemplate.targetPath
     )
-    console.log('templatePath', templatePath)
     fse.ensureDirSync(this.targetPath)
     fse.copySync(templatePath, this.targetPath)
     log.success('代码片段拷贝成功')
@@ -162,6 +161,35 @@ class AddCommand extends Command {
     log.verbose('targetPath', targetPath)
     fse.ensureDirSync(templatePath)
     fse.ensureDirSync(targetPath)
+    if (this.pageTemplate.type === CUSTOM_TYPE) {
+      await this.installCustomPageTemplate({ targetPath, templatePath })
+    } else {
+      await this.installNormalPageTemplate({ targetPath, templatePath })
+    }
+  }
+
+  async installCustomPageTemplate({ targetPath, templatePath }) {
+    // 获取自定义模板入口文件
+    const rootFile = this.pageTemplatePkg.getRootFilePath()
+    if (fs.existsSync(rootFile)) {
+      log.notice('开始执行自定义模板')
+      const options = {
+        targetPath,
+        templatePath,
+        pageTemplate: this.pageTemplate
+      }
+      const code = `require('${rootFile}')(${JSON.stringify(options)})`
+      await spawnAsync('node', ['-e', code], {
+        stdio: 'inherit',
+        cwd: process.cwd()
+      })
+      log.success('自定义模板安装成功')
+    } else {
+      throw new Error('自定义模板入口文件不存在!')
+    }
+  }
+
+  async installNormalPageTemplate({ targetPath, templatePath }) {
     fse.copySync(templatePath, targetPath)
     // ejs渲染
     await this.ejsRender({ ignore: this.pageTemplate.ignore, targetPath })
