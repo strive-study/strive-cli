@@ -12,32 +12,23 @@ const Package = require('@strive-cli/package')
 const semver = require('semver')
 const { sleep, spinnerStart, spawnAsync } = require('@strive-cli/utils')
 const log = require('@strive-cli/log')
-const PAGE_TEMPLATE = [
-  {
-    name: 'Vue3首页模板',
-    npmName: 'strive-cli-template-page-vue3',
-    version: 'latest',
-    targetPath: 'src/views/Home',
-    ignore: ['assets/**']
-  }
-]
-const SECTION_TEMPLATE = [
-  {
-    name: 'Vue3代码片段',
-    npmName: 'strive-cli-template-section-vue',
-    version: 'latest',
-    targetPath: ''
-  },
-  {
-    name: 'Vue3代码片段debug',
-    npmName: 'strive-cli-template-section-vue-debug',
-    version: 'latest',
-    targetPath: 'src/'
-  }
-]
+const request = require('@strive-cli/request')
+
 const ADD_MODE_SECTION = 'section'
 const ADD_MODE_PAGE = 'page'
 class AddCommand extends Command {
+  async getPageTemplate() {
+    return request({
+      url: '/page/template'
+    })
+  }
+
+  async getSectionTemplate() {
+    return request({
+      url: '/section/template'
+    })
+  }
+
   init() {
     log.info('init')
   }
@@ -289,9 +280,17 @@ class AddCommand extends Command {
   }
 
   async getTemplate(addMode = ADD_MODE_PAGE) {
-    const name = addMode === ADD_MODE_PAGE ? '页面' : '代码片段'
-    const TEMPLATE =
-      addMode === ADD_MODE_PAGE ? PAGE_TEMPLATE : SECTION_TEMPLATE
+    let name = ''
+    let template = []
+    if (addMode === ADD_MODE_PAGE) {
+      name = '页面'
+      this.pageTemplateData = await this.getPageTemplate()
+      template = this.pageTemplateData
+    } else {
+      name = '代码片段'
+      this.sectionTemplateData = await this.getSectionTemplate()
+      template = this.sectionTemplateData
+    }
     const pageTemplateName = (
       await inquirer.prompt({
         type: 'list',
@@ -300,7 +299,7 @@ class AddCommand extends Command {
         choices: this.createChoices(addMode)
       })
     ).pageTemplate
-    const pageTemplate = TEMPLATE.find(
+    const pageTemplate = template.find(
       item => item.npmName === pageTemplateName
     )
     if (!pageTemplate) throw new Error(`${name}模板不存在!`)
@@ -379,14 +378,14 @@ class AddCommand extends Command {
 
   createChoices(addMode = ADD_MODE_PAGE) {
     if (addMode === ADD_MODE_PAGE) {
-      return PAGE_TEMPLATE.map(item => {
+      return this.pageTemplateData.map(item => {
         return {
           name: item.name,
           value: item.npmName
         }
       })
     } else {
-      return SECTION_TEMPLATE.map(item => {
+      return this.sectionTemplateData.map(item => {
         return {
           name: item.name,
           value: item.npmName
