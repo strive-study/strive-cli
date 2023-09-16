@@ -13,9 +13,11 @@ class Command {
     if (!Array.isArray(argv)) {
       throw new Error('参数必须为数组!')
     }
+
     if (!argv.length) {
       throw new Error('参数列表不能为空!')
     }
+
     this._argv = argv
     let runner = new Promise((resolve, reject) => {
       let chain = Promise.resolve()

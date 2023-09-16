@@ -39,8 +39,7 @@ const prepare = async () => {
 }
 
 const checkPkgVersion = () => {
-  log.notice('version', pkg.version)
-  log.success('test', 'success')
+  log.notice('version', `当前使用版本: ${pkg.version}`)
 }
 
 // const checkNodeVersion = () => {

@@ -30,7 +30,7 @@ class Package {
     if (this.storeDir) {
       // 缓存模式 未指定targetPath
       await this.prepare()
-      // init publish命令无需检查版本
+      // publish命令无需检查版本
       if (!checkVersion) {
         return pathExists(this.cacheFilePath)
       } else {

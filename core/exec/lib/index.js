@@ -9,6 +9,8 @@ const settings = {
   add: '@strive-cli/add'
 }
 
+const whiteList = ['init', 'add']
+
 const CACHE_DIR = 'dependencies'
 
 async function exec() {
@@ -41,8 +43,12 @@ async function exec() {
     //   await pkg.install()
     //   // install package
     // }
-    // 使用远程command包, 需要本地缓存一份
-    if (!(await pkg.exists())) {
+    let checkNodeVersion = false
+    if (whiteList.includes(command)) {
+      checkNodeVersion = true
+    }
+    if (!(await pkg.exists(checkNodeVersion))) {
+      // 使用远程command包, 需要本地缓存一份
       await pkg.install()
     }
   } else {
