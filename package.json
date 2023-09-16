@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prettier": "prettier --write .",
-    "prepare": "husky install"
+    "prettier": "prettier --write ."
   },
   "bin": {
     "strive": "./core/bin/index.js"
