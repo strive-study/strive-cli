@@ -1,6 +1,6 @@
 {
   "name": "@strive-cli/publish",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "> TODO: description",
   "author": "xiaoli <2585960098@qq.com>",
   "homepage": "https://github.com/strive-study/strive-cli#readme",
@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@strive-cli/command": "file:../../models/command",
-    "@strive-cli/log": "file:../../utils/log",
     "@strive-cli/git": "file:../../models/git",
+    "@strive-cli/log": "file:../../utils/log",
     "fs-extra": "^7.0.1"
   },
   "files": [
