@@ -41,8 +41,6 @@ class GitHub extends GitServer {
     )
   }
 
-  getRemote() {}
-
   getUser() {
     return this.request.get(
       '/user',

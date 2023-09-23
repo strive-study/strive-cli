@@ -23,8 +23,6 @@ class Gitee extends GitServer {
     })
   }
 
-  getRemote() {}
-
   getUser() {
     return this.request.get('/user')
   }
