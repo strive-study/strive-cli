@@ -37,8 +37,6 @@ class CloudBuild {
   }
 
   async prepare() {
-    // 获取OSS文件
-    // 判断当前项目OSS文件是否存在
     // 是否选择覆盖安装
     if (this.prod) {
       const projectName = this.git.name
