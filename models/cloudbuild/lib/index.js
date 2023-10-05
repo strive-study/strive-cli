@@ -5,7 +5,7 @@ const request = require('@strive-cli/request')
 const inquirer = require('inquirer')
 const TIME_OUT = 5 * 60 * 1000
 const CONNECT_TIME_OUT = 5 * 1000
-const WS_SERVER = 'http://127.0.0.1:3000'
+const WS_SERVER = 'http://43.138.12.24:3000'
 const FAILED_CODE = [
   'prepare failed',
   'download failed',
