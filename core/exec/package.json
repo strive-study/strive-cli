@@ -11,9 +11,9 @@
     "test": "__tests__"
   },
   "dependencies": {
-    "@strive-cli/log": "file:../utils/log",
-    "@strive-cli/package": "file:../models/package",
-    "@strive-cli/utils": "file:../utils/utils"
+    "@strive-cli/log": "file:../../utils/log",
+    "@strive-cli/package": "file:../../models/package",
+    "@strive-cli/utils": "file:../../utils/utils"
   },
   "files": [
     "lib"
