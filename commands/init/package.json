@@ -13,7 +13,7 @@
   "dependencies": {
     "@strive-cli/command": "file:../../models/command",
     "@strive-cli/log": "file:../../utils/log",
-    "@strive-cli/package": "file:../../utils/package",
+    "@strive-cli/package": "file:../../models/package",
     "@strive-cli/request": "file:../../utils/request",
     "@strive-cli/utils": "file:../../utils/utils",
     "ejs": "^3.1.9",
