@@ -78,7 +78,8 @@ class CloudBuild {
           version: this.git.version,
           buildCmd: this.buildCmd,
           prod: this.prod
-        }
+        },
+        transports: ['websocket']
       })
 
       socket.on('connect', () => {
